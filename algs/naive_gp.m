@@ -63,9 +63,8 @@ end
 function test_naive_gp   % basic tests for now
 N = 3e3;        % problem size
 l = 0.1;        % SE kernel scale
-ker.k = @(d) exp(-(0.5/l^2)*(d.*d));
-sigma = 0.3;    % used for regression
-sigmadata = sigma;   % consistent model
+sigma = 0.3;    % used to regress
+sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 
 for dim = 1:2   % ..........
@@ -74,6 +73,7 @@ for dim = 1:2   % ..........
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
+  ker = SE_ker(dim,l);
   [y, ~, info] = naive_gp(x, meas, sigma^2, ker);
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms resid of lin sys   %.3g\n', rms(y.mean-y.meanbook))

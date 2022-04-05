@@ -1,1 +1,17 @@
 Dataset directory; one subdirectory per dataset
+
+
+
+
+Notes on datasets & potential ones:
+
+* Minden at el 2017
+http://klho.github.io/pubs/docs/minden-2017b-multiscale-model-simul.pdf
+use:
+2D NOAA ocean temps.
+Full data is 225GB.
+https://rda.ucar.edu/datasets/ds540.0/
+They pick N=2^17 subset.
+Need to register to download.
+Superceded by similar https://rda.ucar.edu/datasets/ds548.0/
+
