@@ -50,7 +50,7 @@ y.meanbook = K*alpha;                      % the book formula, slow, unstable
 info.cputime(2) = toc;
 
 ytrg = [];
-if do_trg
+if do_trg                              % *** untested
   [~,n] = size(xtrg);        % # targs
   tic;
   B = densekermat(ker.k,xtrg,x);   %  n-by-N
