@@ -36,3 +36,4 @@ subplot(1,2,1); scatter(x(1,:),x(2,:),[],truemeas,'filled');
 caxis([-1 1]); axis equal tight
 subplot(1,2,2); scatter(x(1,:),x(2,:),[],meas,'filled');
 caxis([-1 1]); axis equal tight
+title('get\_randdata test');

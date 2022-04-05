@@ -64,22 +64,21 @@ function test_naive_gp   % basic tests for now
 N = 3e3;        % problem size
 l = 0.1;        % SE kernel scale
 ker.k = @(d) exp(-(0.5/l^2)*(d.*d));
-sigma = 0.3;    % for regression
+sigma = 0.3;    % used for regression
 sigmadata = sigma;   % consistent model
-freqdata = 3.0;   % how oscillatory underlying func; freq >> 0.3/l misspecified
+freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 
 for dim = 1:2   % ..........
   fprintf('\ntest naive_gp, sigma=%.3g, dim=%d...\n',sigma,dim)
-  x = rand(dim,N);     % in [0,1]^dim
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
-  truemeas = f(x);
-  meas = truemeas + sigmadata*randn(N,1);   % noisy data
+  [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   [y, ~, info] = naive_gp(x, meas, sigma^2, ker);
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms resid of lin sys   %.3g\n', rms(y.mean-y.meanbook))
   fprintf('        rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
+  % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
 
   % show pics
