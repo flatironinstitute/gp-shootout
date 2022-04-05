@@ -27,7 +27,7 @@ end
 
 
 %%%%%%%
-function test_densekermat     % size test only
+function test_densekermat     % size test only, not vals!
 N = 1e2; % src
 M = 30;  % trg
 f = @(d) sin(abs(d));
@@ -38,3 +38,4 @@ for dim=1:2
   assert(size(A,1)==N && size(A,2)==N && norm(A-A')==0.0)
   assert(size(B,1)==M && size(B,2)==N)
 end
+disp('densekermat test passed')

@@ -1,4 +1,4 @@
-% run all tests
+% run all tests (make sure startup run first)
 
-showkernel
-
+densekermat
+naive_gp
