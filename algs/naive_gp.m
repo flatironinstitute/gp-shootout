@@ -18,7 +18,7 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 %  xtrg - [optional, or may be empty] targets points, d*n real array for d dims.
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
-%         getcovar - if true, compute conditional covariances
+%         getcovar - if true, compute conditional covariances [*** to implement]
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -71,7 +71,6 @@ freqdata = 3.0;   % how oscillatory underlying func; freq >> 0.3/l misspecified
 for dim = 1:2   % ..........
   fprintf('\ntest naive_gp, sigma=%.3g, dim=%d...\n',sigma,dim)
   x = rand(dim,N);     % in [0,1]^dim
-  if dim==1, x = sort(x); end     % just to help plotting
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
@@ -86,8 +85,10 @@ for dim = 1:2   % ..........
   % show pics
   if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
   elseif dim==2, figure;
-    subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled'); caxis([-1 1])
-    subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled'); caxis([-1 1])
+    subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
+    caxis([-1 1]); axis equal tight
+    subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
+    caxis([-1 1]); axis equal tight
   end
   title(sprintf('naive\\_gp test %dd',dim)); drawnow;
     
