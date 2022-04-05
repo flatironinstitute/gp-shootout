@@ -18,7 +18,7 @@ Method dependencies:
 * For GPyTorch: Python with PyTorch and GPyTorch
 * ...
 
-To test your installation from MATLAB shell: `cd test; all`
+To test your installation from MATLAB shell: `startup; test_all`
 
 ### Usage
 
