@@ -1,0 +1,4 @@
+% run all tests
+
+showkernel
+
