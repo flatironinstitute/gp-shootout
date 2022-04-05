@@ -14,10 +14,11 @@ if nargin==0, test_densekermat; return; end
 if nargin<3, y=x; end
 dim = size(x,1);
 if size(y,1)~=dim, error('y must have same # dims as x!'); end
-dd = abs(y(1,:)-x(1,:)');     % matrix of abs diffs
+dd = abs(y(1,:)-x(1,:)');     % matrix of abs diffs, note broadcast op
 if dim==1
   K = k(dd);
-else                          % now dd = distance^2 matrix; add dim-by-dim
+else
+  dd = dd.^2;                 % now dd = distance^2 matrix; add dim-by-dim
   for d=2:dim
     dd = dd + (y(d,:)-x(d,:)').^2;
   end
