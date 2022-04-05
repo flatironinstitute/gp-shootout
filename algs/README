@@ -1,0 +1,16 @@
+
+Notes about methods and potential codes to try:
+
+
+* Minden et al 2017 has old unsupported code, depends on Ken Ho's FLAM:
+https://github.com/asdamle/GPMLE/
+Uses N=2^17 samples of 225GB ocean NOAA dataset.
+https://arxiv.org/abs/1603.08057
+
+
+* Zhang & Williamson 2019 JMLR: Embarrassingly parallel GP.
+Mixture of Experts, with importance sampling.
+arxiv:1702.08420
+has CO2 data N=300k only,
+and code:
+https://github.com/michaelzhang01/ISMOE
