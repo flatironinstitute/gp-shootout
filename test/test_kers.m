@@ -1,8 +1,9 @@
 % script to test all kernel functions have roughly the right Fourier transform,
 % using equispaced quadrature (PTR) Kronecker product over dims.
 % For now, only SE kernel and Matern-1/2.
+% *** to do: unit tests, add smoother Materns.
 % Barnett 4/5/22
-clear
+clear; disp('test_kers: user should check errors not O(1), checks prefactors.');
 
 l = 0.1;     % spatial scale (for all kernels that have one)
 xid = 3.0;   % freq mag |xi| to test (let's make all kernels use same for now)
@@ -27,7 +28,7 @@ for type=1:2   % -------------- kernel types --------------
     n = ceil(2*L/h);
     x = -L+(0:n-1)*h;
     if dim==1
-      disp([nam, '...']);
+      fprintf('type=%d: %s...\n',type,nam)
       khatap = h*sum(ker.k(abs(x)).*cos(2*pi*xid*x));
     elseif dim==2 
       [xx yy] = ndgrid(x,x);
