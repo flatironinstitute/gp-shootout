@@ -6,6 +6,8 @@ function ker = SE_ker(dim,l)
 %  Fourier transform (mapping wavevector magnitudes to values).
 %  Latter uses Phillip's convention. For squared-exponential kernel (Gaussian),
 %  l is the distance scale.
+%
+% To test see: TEST_KERS
 
 if dim<1, error('dim must be at least 1!'); end
 if l<=0, error('l lengthscale must be positive!'); end
