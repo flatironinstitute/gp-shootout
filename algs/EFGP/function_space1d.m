@@ -79,35 +79,6 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 end
 
 
-function L = getL(eps, kern_hat)
-% find numerical bandlimit of spectral density using bisection
-    a = 0;
-    b = 1000;
-    nmax = 10;
-    for i=1:nmax
-        if kern_hat(b) > eps
-            b = 2*b;
-        else
-            break
-        end
-    end
-    %%%fprintf('starting upper bound increased to: \n %.3g\n', b);
-
-    % start bisection
-    nmax = 200;
-    for i=1:nmax
-        mid = (a + b)/2;
-        fmid = kern_hat(mid);
-        if fmid > eps
-            a = mid;
-        else
-            b = mid;
-        end
-    end
-    L = mid;
-end
-
-
 function [v2] = Afun2(Gf, a)
 % this function is used for performaing a fast matrix multiply 
 % in conjugate gradient. it takes an fft of a and multiplies 

@@ -64,7 +64,6 @@ y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);
 
 
-
 %%%%%%%%%%
 function test_EFGP   % basic tests for now, duplicates naive_gp *** to unify
 N = 3e2;        % problem size (small, matching naive, for now)
@@ -90,6 +89,7 @@ for dim = 1:2   % ..........
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
+  % make sure we're computing gp regression accurately
   fprintf('        rms efgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
 
   % show pics

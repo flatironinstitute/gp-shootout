@@ -87,36 +87,6 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 end
 
 
-function L = getL(eps, kern_hat)
-% find numerical bandlimit of spectral density using bisection
-    k0 = kern_hat(0);
-    a = 0;
-    b = 1000;
-    nmax = 10;
-    for i=1:nmax
-        if (kern_hat(b)/k0) > eps
-            b = 2*b;
-        else
-            break
-        end
-    end
-    %%%fprintf('starting upper bound increased to: \n %.3g\n', b);
-
-    % start bisection
-    nmax = 200;
-    for i=1:nmax
-        mid = (a + b)/2;
-        fmid = kern_hat(mid)/k0;
-        if fmid > eps
-            a = mid;
-        else
-            b = mid;
-        end
-    end
-    L = mid;
-end
-
-
 function [Gf] = getGf(xs, z)
     N = length(xs);
     m = length(z);
