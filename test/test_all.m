@@ -4,3 +4,4 @@ test_kers
 densekermat
 get_randdata
 naive_gp
+EFGP

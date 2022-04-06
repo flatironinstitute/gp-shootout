@@ -1,4 +1,4 @@
-function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, kern, eps, xsol)
+function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker, eps, xsol)
 % *** to doc
 %
 % Outputs:
@@ -8,9 +8,8 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
 % iter - diagnostics from CG
 % ts   - diagnostic list of timings
     
-    [k, khat] = get_kernel(kern);
-    
-    N = numel(y);
+  k = ker.k; khat = ker.khat;    % get functions, new kernel format
+  N = numel(y);
 
     tic_precomp = tic;
     % find support of function in time domain
@@ -41,7 +40,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
     
     % construct rhs with fft
     isign = -1;
-    eps = eps / 1000;
+    eps = eps / 1000;                         % *** give new symbol
     rhs = finufft1d1(2*pi*x*h,y,isign,eps,m);
     rhs = ws .* rhs;
     

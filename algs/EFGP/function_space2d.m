@@ -1,6 +1,11 @@
-function [beta, xis, yhat, iter, time_info] = function_space2d(eps, kern, xs, y, sigma2, xsols)
-    % convert kernel struct to functions
-    [k, khat] = get_kernel(kern);
+function [beta, xis, yhat, iter, time_info] = function_space2d(eps, ker, xs, y, sigma2, xsols)
+%  *** to rationalize interface
+%  *** to doc
+%  *** to unify and split out getL below
+%
+  
+% get kernel functions
+  k = ker.k; khat = ker.khat;
 
     % support of functionin time domain
     tic_precomp = tic;

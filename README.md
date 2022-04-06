@@ -33,7 +33,11 @@ to do: Minimally complete example...
 
 ### To do
 
-* bring in Philip codes (wrap them for one interface) to algs/
+* make error benchmarks for methods, vs naive_gp, for N<=1e4 probs
+   ... or just use dense K mat to check lin sys residual for methods.
+* other top-level fig-generating driver scripts
+* rationalize interface for Philip dim-specific codes, split out `getL()`
 * add Matern nu=3/2, 5/2 in all 3 dims and to tester
-* add covar and new-targ output to naive_gp
-
+* add covar and new-targ output to `naive_gp`
+* datasets -> `data/*`
+* other methods -> `algs/*` (matlab wrappers to github sub-repos?)
