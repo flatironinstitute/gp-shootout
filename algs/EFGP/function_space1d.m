@@ -1,5 +1,18 @@
-function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker, eps, xsol)
-% *** to doc
+function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ker, eps, xsol)
+%
+% this function performs Gaussian process regression in 1d using equispaced
+% Fourier representations of Gaussian processes and fast algorithms for
+% performing regression. 
+%
+% Inputs:
+% x      - N x 1 array of location of observations
+% y      - N x 1 array of (noisy) observations
+% sigmasq - residual variance for GP regression
+% ker    - struct with ker.k is the covariance kernel and ker.khat is its
+% Fourier transform
+% eps    - truncate covariance kernel in time and Fourier domains when values
+% of functions reach eps
+% xsol   - locations at which to evaluate posterior mean
 %
 % Outputs:
 % beta - vector of Fourier basis weights (not really for the user)
@@ -46,7 +59,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
     t_precomp = toc(tic_precomp);
     
     % solve linear system with conjugate gradient
-    Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigma2 .* a; 
+    Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigmasq .* a; 
     
     tic_cg = tic; 
     [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, m);
@@ -60,6 +73,9 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
     t_post = toc(tic_post);
 
     time_info = [t_precomp, t_cg, t_post];
+
+    % convert to real
+    yhat = real(yhat);
 end
 
 

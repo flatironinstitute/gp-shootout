@@ -1,9 +1,30 @@
-function [beta, xis, yhat, iter, time_info] = function_space2d(eps, ker, xs, y, sigma2, xsols)
+function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
 %  *** to rationalize interface
 %  *** to doc
 %  *** to unify and split out getL below
 %
-  
+% this function performs Gaussian process regression in 2d using equispaced
+% Fourier representations of Gaussian processes and fast algorithms for
+% performing regression. 
+%
+% Inputs:
+% xs - N x 2 array of location of observations
+% y - N x 1 array of (noisy) observations
+% sigmasq - residual variance for GP regression
+% ker - struct with ker.k is the covariance kernel and ker.khat is its
+% Fourier transform
+% eps - truncate covariance kernel in time and Fourier domains when values
+% of functions reach eps
+% xsol - locations at which to evaluate posterior mean
+%
+% Outputs:
+% beta - vector of Fourier basis weights (not really for the user)
+% xis  - Fourier freqs used (not really for the user)
+% yhat - posterior means at xsol ordinates   <- the only user output
+% iter - diagnostics from CG
+% time_info   - diagnostic list of timings
+%
+
 % get kernel functions
   k = ker.k; khat = ker.khat;
 
@@ -35,7 +56,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(eps, ker, xs, y, 
     
     % conjugate gradient
     ws_flat = reshape(ws, m^2, 1);
-    Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a) + sigma2 .* a;
+    Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a) + sigmasq .* a;
     
     isign = -1;
     tol = eps / 10;
