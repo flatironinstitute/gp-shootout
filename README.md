@@ -9,19 +9,20 @@ Authors: Philip R Greengard, Alex H Barnett, Manas Rachh.
 
 ### Installation
 
+`git clone --recurse-submodules https://github.com/flatironinstitute/gp-shootout.git`
+
+Your system must also have the following.
 Required dependencies:
 
 * MATLAB (tested on R2021b)
 
 Method dependencies:
 
-* For EFGP: FINUFFT (version 2.0 or later)
+* For EFGP: FINUFFT (version 2.0 or later; please specify its location in `startup.m`)
 * For GPyTorch: Python with PyTorch and GPyTorch
 * ...
 
-First adjust locations of MATLAB interfaces to external libs in `startup.m`.
-
-Then, to test your installation from MATLAB shell: `startup; test_all`
+To test your installation from MATLAB shell: `startup; test_all`
 
 
 ### Usage
@@ -36,8 +37,9 @@ to do: Minimally complete example...
 * make error benchmarks for methods, vs naive_gp, for N<=1e4 probs
    ... or just use dense K mat to check lin sys residual for methods.
 * other top-level fig-generating driver scripts
-* rationalize interface for Philip dim-specific codes, split out `getL()`
+* rationalize interface for Philip dim-specific codes, move `getL()` into `kernels`
 * add Matern nu=3/2, 5/2 in all 3 dims and to tester
 * add covar and new-targ output to `naive_gp`
-* datasets -> `data/*`
-* other methods -> `algs/*` (matlab wrappers to github sub-repos?)
+* datasets -> `data/*`.   Eg Heaton competition from 2019, 2D, N~1e5.
+* other methods -> `algs/*` (Python via system calls from matlab?)
+

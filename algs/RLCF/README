@@ -1,0 +1,6 @@
+Directory for RLCF method of Chen-Stein.
+Jie Chen & Michael L. Stein (2021): Linear-Cost Covariance Functions
+for Gaussian Random Fields, Journal of the American Statistical Association
+DOI: 10.1080/01621459.2021.1919122
+
+their code is in a git submodule RLCM (their package name).
