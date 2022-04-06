@@ -37,7 +37,7 @@ to do: Minimally complete example...
 * make error benchmarks for methods, vs naive_gp, for N<=1e4 probs
    ... or just use dense K mat to check lin sys residual for methods.
 * other top-level fig-generating driver scripts
-* rationalize interface for Philip dim-specific codes, move `getL()` into `kernels`
+* ~~rationalize interface for Philip dim-specific codes, move `getL()` into `kernels`~~
 * add Matern nu=3/2, 5/2 in all 3 dims and to tester
 * add covar and new-targ output to `naive_gp`
 * datasets -> `data/*`.   Eg Heaton competition from 2019, 2D, N~1e5.
