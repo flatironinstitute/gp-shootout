@@ -38,14 +38,14 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(eps, ker, xs, y, 
     Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a) + sigma2 .* a;
     
     isign = -1;
-    eps1 = eps / 100;
-    rhs = finufft2d1(2*pi*xs(:,1)*h, 2*pi*xs(:,2)*h, y, isign, eps1, m, m);
+    tol = eps / 10;
+    rhs = finufft2d1(2*pi*xs(:,1)*h, 2*pi*xs(:,2)*h, y, isign, tol, m, m);
     rhs = reshape(rhs.' .* ws, [], 1); 
     
     t_precomp = toc(tic_precomp);
     % solve linear system
     tic_cg = tic;
-    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,eps1,m^2);
+    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,eps,m^2);
     t_cg = toc(tic_cg);
     
     % evaluate posterior mean 
@@ -53,7 +53,8 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(eps, ker, xs, y, 
     tmpvec = ws .* reshape(beta, [m, m]);
     tmpvec = tmpvec.';
     isign = +1;
-    yhat = finufft2d2(2*pi*h * xsols(:,1), 2*pi*h * xsols(:,2),isign,eps1,tmpvec);
+    tol = eps / 10;
+    yhat = finufft2d2(2*pi*h * xsols(:,1), 2*pi*h * xsols(:,2),isign,tol,tmpvec);
     t_post = toc(tic_post);
 
     % package timings

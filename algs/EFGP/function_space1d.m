@@ -32,16 +32,15 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
     ws = sqrt(khat(xis)' * h);
     
     % construct first row and column of toeplitz matrix for fast apply
-    tol = eps / 1000;
+    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
     c = ones(N, 1);
-    %size(x)  % ahb killed
-    XtXrow = finufft1d1(x*2*pi*h,c,+1,tol,2*m-1)'; 
+    XtXrow = finufft1d1(x*2*pi*h, c, +1, tol, 2*m-1)'; 
     Gf = fftn(XtXrow.');
     
     % construct rhs with fft
     isign = -1;
-    eps = eps / 1000;                         % *** give new symbol
-    rhs = finufft1d1(2*pi*x*h,y,isign,eps,m);
+    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
+    rhs = finufft1d1(2*pi*x*h, y, isign, tol, m);
     rhs = ws .* rhs;
     
     t_precomp = toc(tic_precomp);
@@ -50,15 +49,14 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigma2, ker
     Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigma2 .* a; 
     
     tic_cg = tic; 
-    tol = eps / 1000; 
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, tol, m);
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, m);
     t_cg = toc(tic_cg);
     
     % tabulate solution using fft
-    tol = eps / 1000;
+    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
     tmpvec = ws .* beta;
     tic_post = tic;
-    yhat = finufft1d2(2*pi*h*xsol,+1,tol, tmpvec);
+    yhat = finufft1d2(2*pi*h*xsol, +1, tol, tmpvec);
     t_post = toc(tic_post);
 
     time_info = [t_precomp, t_cg, t_post];
