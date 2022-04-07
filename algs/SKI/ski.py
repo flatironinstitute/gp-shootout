@@ -10,8 +10,11 @@ def test_fun(n):
 
 def ski_mat(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
     train_x = torch.tensor(train_x).double()
+    print(train_x)
     train_y = torch.tensor(train_y).double()
+    print(train_y)
     test_x = torch.tensor(test_x).double()
+    print(test_x)
     grid_size = int(grid_size)
     double = int(double)
 
@@ -57,7 +60,14 @@ class gpr_model_ski_mat(gpytorch.models.ExactGP):
         # on a validation set.
         ###grid_size = gpytorch.utils.grid.choose_grid_size(train_x, 1.0)
 
-        [dim] = train_x.size()
+        print(train_x.size())
+        print(len(train_x.size()))
+        if len(train_x.size()) > 1:
+            [_, dim] = train_x.size()
+            print(dim)
+        else:
+            dim = 1
+    
 
         # choice of kernels: 'squared-exponential', 'matern12', 'matern32'
         if kern_family == 'squared-exponential':
@@ -70,7 +80,7 @@ class gpr_model_ski_mat(gpytorch.models.ExactGP):
         self.mean_module = gpytorch.means.ZeroMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(
             gpytorch.kernels.GridInterpolationKernel(
-                gpy_kern, grid_size=grid_size, num_dims=1
+                gpy_kern, grid_size=grid_size, num_dims=dim
             )
         )
 
