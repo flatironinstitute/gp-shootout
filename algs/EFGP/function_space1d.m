@@ -1,6 +1,8 @@
 function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ker, eps, xsol)
+% FUNCTION_SPACE1D   fast equispaced Fourier NUFFT-based GP regression in 1D
 %
-% this function performs Gaussian process regression in 1d using equispaced
+% [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ker, eps, xsol) 
+% performs Gaussian process regression in 1d using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
 % performing regression. 
 %
@@ -20,7 +22,9 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 % yhat - posterior means at xsol ordinates   <- the only user output
 % iter - diagnostics from CG
 % ts   - diagnostic list of timings
-    
+%
+% To test this routine see: EFGP
+  
   k = ker.k; khat = ker.khat;    % get functions, new kernel format
   N = numel(y);
 
