@@ -8,7 +8,7 @@ clear; disp('test_kers: user should check errors not O(1), checks prefactors.');
 l = 0.1;     % spatial scale (for all kernels that have one)
 xid = 3.0;   % freq mag |xi| to test (let's make all kernels use same for now)
 
-for type=1:2   % -------------- kernel types --------------
+for type=1:4   % -------------- kernel types --------------
   for dim=1:3      % .......
     switch type        
       case 1
@@ -18,7 +18,20 @@ for type=1:2   % -------------- kernel types --------------
         L = l*sqrt(2*log(1/eps));   % max x to get tails to emach
       case 2
         nam = 'Matern nu=1/2';
-        ker = Matern12_ker(dim,l);
+        nu = 0.5;
+        ker = Matern_ker(dim, nu, l);
+        h = l/5;    % crappy convergence
+        tol = 1e-5; L = l*log(1/tol);   % max x to get tails to err tol
+      case 3
+        nam = 'Matern nu=3/2';
+        nu = 1.5;
+        ker = Matern_ker(dim, nu, l);
+        h = l/5;    % crappy convergence
+        tol = 1e-5; L = l*log(1/tol);   % max x to get tails to err tol
+      case 4
+        nam = 'Matern nu=5/2';
+        nu = 2.5;
+        ker = Matern_ker(dim, nu, l);
         h = l/5;    % crappy convergence
         tol = 1e-5; L = l*log(1/tol);   % max x to get tails to err tol
       otherwise
