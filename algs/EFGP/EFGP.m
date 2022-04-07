@@ -84,7 +84,7 @@ for dim = 1:2   % ..........
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run o(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
-  fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis),rms(info.beta))
+  fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...

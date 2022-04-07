@@ -1,9 +1,8 @@
 function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
-%  *** to rationalize interface
-%  *** to doc
-%  *** to unify and split out getL below
+% FUNCTION_SPACE2D   equispaced Fourier NUFFT-based GP regression in 2D
 %
-% this function performs Gaussian process regression in 2d using equispaced
+% [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
+% performs Gaussian process regression in 2d using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
 % performing regression. 
 %
@@ -24,6 +23,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 % iter - diagnostics from CG
 % time_info   - diagnostic list of timings
 %
+% For test see EFGP 
 
 % get kernel functions
   k = ker.k; khat = ker.khat;
