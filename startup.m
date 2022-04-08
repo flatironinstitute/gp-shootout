@@ -1,9 +1,5 @@
 % global matlab setup
 
-% terminal style
-format long g
-format compact
-
 % point to library locations here, based on machine name
 [status,host] = system('uname -n');
 if strcmp(host(1:4),'ross')     % alex's setup
@@ -24,3 +20,14 @@ py_path = py.sys.path;
 if count(py_path, path_to_ski) == 0
     insert(py_path, int32(0), path_to_ski);
 end
+
+% terminal style
+format long g
+format compact
+
+% restore pre-R2014b figure look:
+set(groot,'DefaultFigureGraphicsSmoothing','off')   % kill slow antialiasing
+set(groot,'DefaultAxesColorOrder',[0 0 1; 0 .5 0; 1 0 0; 0 .75 .75; ...
+                                   .75 0 .75; .75 .75 0; .25 .25 .25])
+set(groot,'DefaultFigureColormap',jet(256))
+set(groot,'defaultLegendAutoUpdate','off')

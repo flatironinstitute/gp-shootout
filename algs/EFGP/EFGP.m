@@ -66,7 +66,7 @@ ytrg.mean = yhat(N+1:end);
 
 %%%%%%%%%%
 function test_EFGP   % basic tests for now, duplicates naive_gp *** to unify
-N = 3e2;        % problem size (small, matching naive, for now)
+N = 3e3;        % problem size (small, matching naive, for now)
 l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case

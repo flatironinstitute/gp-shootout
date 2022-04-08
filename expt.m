@@ -2,12 +2,12 @@
 % (copied from self-test of EFGP)
 clear; verb = 1;
 
-N = 1e5;        % problem size
-l = 0.01;        % SE kernel scale
+N = 1e6;        % problem size
+l = 0.05;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-8;
+opts.tol = 1e-6;
 dim = 2;
 unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
 wavevec = freqdata*unitvec;    % col vec
