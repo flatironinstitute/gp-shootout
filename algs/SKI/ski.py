@@ -54,10 +54,8 @@ class gpr_model(gpytorch.models.ExactGP):
 
         if len(train_x.size()) > 1:
             [_, dim] = train_x.size()
-            print(dim)
         else:
             dim = 1
-    
 
         # choice of kernels: 'squared-exponential', 'matern12', 'matern32'
         if kern_family == 'squared-exponential':

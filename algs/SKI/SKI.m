@@ -4,7 +4,7 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 % [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %  performs Gaussian process regression 
 %  NOTE: when performing regression for data on [0, 1], we need data points
-%  at x=0 and x=1
+%  (x) at x=0 and x=1
 %  
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -43,10 +43,9 @@ if ~isfield(opts,'grid_size'), opts.grid_size = N; end     % default
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
 xsol = [x, xtrg];  % hack for now which adds meas pts to target list
-                    % and transpose to Philip n*d shape
-xpy = py.numpy.array(x);
-ypy = py.numpy.array(meas);
-testxpy = py.numpy.array(xsol);
+xpy = py.numpy.array(x');
+ypy = py.numpy.array(meas');
+testxpy = py.numpy.array(xsol');
 ski_out = py.ski.gpr(xpy, ypy, testxpy, opts.grid_size, sigmasq, ker.fam, ker.l);
 % unpack ski output
 yhat = double(ski_out{1})';
@@ -62,14 +61,11 @@ function test_SKI
 % data
 dim = 1;
 N = 10;
-x = linspace(0, 1, N);
-x = rand(N, dim)';
+x = rand(dim, N);
 x(1) = 0;
-x(N) = 1;
-x = sort(x);
-%N = 2;
-%x = [0, 1];
-meas = cos(x) + rand(1, N);
+x(2) = 1;
+sigma_true = 1.0;
+meas = cos(x) + sigma_true * rand(1, N);
 
 % test points
 ntest = 10;
@@ -79,21 +75,30 @@ testx(ntest) = x(N);
 
 opts.grid_size = 100;
 l = 0.2;
-ker = SE_ker(1, l);
-sigmasq = 1.0;
+ker = SE_ker(dim, l);
+sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
-
-% sigmasq = 1.0;
-% % kern_family must be one of 'matern12', 'matern32', 'squared-exponential'
-% kern_family = 'matern12';
-% kern_family = 'squared-exponential';
-% xpy = py.numpy.array(x);
-% ypy = py.numpy.array(y);
-% testxpy = py.numpy.array(testx);
-% out1 = py.ski.gpr(xpy, ypy, testxpy, grid_size, sigma2, kern_family, l);
-
-% compare to naive approach
-ker = SE_ker(1, l);
 [yhat2, ytrg2, info] = naive_gp(x, meas, sigmasq, ker, testx, []);
+fprintf('%dd max difference at target points %g \n', dim, max(abs(ytrg.mean - ytrg2.mean)));
 
-fprintf('1d max difference at target points %g \n', max(abs(ytrg.mean - ytrg2.mean)));
+% now in 2d
+% data
+dim = 2;
+N = 10;
+x = rand(dim, N);
+x(:, 1) = 0;
+x(:, 2) = 1;
+sigma_true = 1.0;
+meas = cos(x(1, :) + 3 * x(2, :)) + sigma_true * rand(1, N);
+
+% test points
+ntest = 10;
+testx = sort(rand(dim, ntest));
+
+opts.grid_size = 100;
+l = 0.2;
+ker = SE_ker(dim, l);
+sigmasq = sigma_true^2;
+[yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
+[yhat2, ytrg2, info] = naive_gp(x, meas, sigmasq, ker, testx, []);
+fprintf('%dd max difference at target points %g \n', dim, max(abs(ytrg.mean - ytrg2.mean)));
