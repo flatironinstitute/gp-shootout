@@ -4,17 +4,12 @@ import gpytorch
 import numpy as np
 
 
-def test_fun(n):
-    return n
-
-
 def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
     train_x = torch.tensor(train_x).double()
     train_y = torch.tensor(train_y).double()
     test_x = torch.tensor(test_x).double()
     grid_size = int(grid_size)
     double = int(double)
-
 
     # initialize model for ski
     likelihood = gpytorch.likelihoods.GaussianLikelihood()

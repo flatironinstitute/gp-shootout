@@ -14,13 +14,21 @@ if ~ismember(nu, [0.5, 1.5, 2.5]), error('for now, nu must be in [0.5, 1.5, 2.5]
 
 if nu == 0.5
     ker.k = @(d) exp( (-1/l) * d);                                % d = |x|
+    ker.fam = 'matern12';
 elseif nu == 1.5
     ker.k = @(d) (1 + sqrt(3) .* d ./ l) .* exp(-sqrt(3) .* d ./ l);
+    ker.fam = 'matern32';
 elseif nu == 2.5
     ker.k = @(d) (1 + sqrt(5).*d./l + 5.*d.^2/(3*l^2)) .* exp(-sqrt(5) .* d / l);
+    ker.fam = 'matern52';
 end
 
 % following taken from philip nufft_gps2d:  
 scaling = (2*sqrt(pi))^dim * gamma(nu+dim/2) * (2*nu)^nu / (gamma(nu) * l^(2*nu));   % yuk; see https://en.wikipedia.org/wiki/Mat%C3%A9rn_covariance_function
 ker.khat = @(xid) scaling * (2*nu/l^2 + (4*pi^2) * xid.^2).^(-(nu + dim/2));
 % xid means |xi|
+
+% attributes to extract when using certain algorithms (e.g. ski)
+ker.l = l;
+ker.nu = nu;
+
