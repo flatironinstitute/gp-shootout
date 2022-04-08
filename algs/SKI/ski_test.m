@@ -12,9 +12,9 @@ end
 % reload python module in case changes were made to python file. this is
 % useful when making changes to the python file so that you don't have to
 % restart matlab each time
-%clear classes
-%m = py.importlib.import_module('ski1d');
-%py.importlib.reload(m);
+% clear classes
+% m = py.importlib.import_module('ski');
+% py.importlib.reload(m);
 
 
 % data
@@ -28,15 +28,13 @@ x = sort(x);
 y = cos(x) + rand(N, 1);
 
 % test points
-ntest = 100;
-%testx = linspace(0, 1, ntest)';
+ntest = 10;
 testx = sort(rand(ntest, dim));
 testx(1) = x(1);
 testx(ntest) = x(N);
 grid_size = 100;
-double_prec = 1;
 
-l = 0.1;
+l = 0.2;
 sigma2 = 1.0;
 % kern_family must be one of 'matern12', 'matern32', 'squared-exponential'
 kern_family = 'matern12';
@@ -44,7 +42,7 @@ kern_family = 'squared-exponential';
 xpy = py.numpy.array(x);
 ypy = py.numpy.array(y);
 testxpy = py.numpy.array(testx);
-out1 = py.ski.ski_mat(xpy, ypy, testxpy, grid_size, sigma2, kern_family, l);
+out1 = py.ski.gpr(xpy, ypy, testxpy, grid_size, sigma2, kern_family, l);
 
 % unpack ski output
 yhat = double(out1{1})';
@@ -65,7 +63,9 @@ disp(yhat - ytrg.mean);
 
 
 
-%%% 2d example
+
+
+%%% 2d test
 % data
 dim = 2;
 N = 10;
@@ -90,7 +90,7 @@ kern_family = 'squared-exponential';
 xpy = py.numpy.array(x);
 ypy = py.numpy.array(y);
 testxpy = py.numpy.array(testx);
-out1 = py.ski.ski_mat(xpy, ypy, testxpy, grid_size, sigma2, kern_family, l);
+out1 = py.ski.gpr(xpy, ypy, testxpy, grid_size, sigma2, kern_family, l);
 
 % unpack ski output
 yhat = double(out1{1})';

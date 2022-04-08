@@ -8,20 +8,17 @@ def test_fun(n):
     return n
 
 
-def ski_mat(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
+def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
     train_x = torch.tensor(train_x).double()
-    print(train_x)
     train_y = torch.tensor(train_y).double()
-    print(train_y)
     test_x = torch.tensor(test_x).double()
-    print(test_x)
     grid_size = int(grid_size)
     double = int(double)
 
 
     # initialize model for ski
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = gpr_model_ski_mat(train_x, train_y, likelihood, grid_size, kern_family)
+    model = gpr_model(train_x, train_y, likelihood, grid_size, kern_family)
 
     if double:
         model.double()
@@ -32,7 +29,7 @@ def ski_mat(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=
     model.train()
     likelihood.train()
 
-    set_hyperparams_ski_mat(model, sigma2, l)
+    set_hyperparams(model, sigma2, l)
 
     model.eval()
     likelihood.eval()
@@ -49,9 +46,9 @@ def ski_mat(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=
 
 
 
-class gpr_model_ski_mat(gpytorch.models.ExactGP):
+class gpr_model(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood, grid_size, kern_family):
-        super(gpr_model_ski_mat, self).__init__(train_x, train_y, likelihood)
+        super(gpr_model, self).__init__(train_x, train_y, likelihood)
 
         # SKI requires a grid size hyperparameter. This util can help with 
         # that. Here we are using a grid that has the same number of points 
@@ -60,8 +57,6 @@ class gpr_model_ski_mat(gpytorch.models.ExactGP):
         # on a validation set.
         ###grid_size = gpytorch.utils.grid.choose_grid_size(train_x, 1.0)
 
-        print(train_x.size())
-        print(len(train_x.size()))
         if len(train_x.size()) > 1:
             [_, dim] = train_x.size()
             print(dim)
@@ -90,7 +85,7 @@ class gpr_model_ski_mat(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
 
-def set_hyperparams_ski_mat(model, sigma2, l):
+def set_hyperparams(model, sigma2, l):
     hypers = {
         'likelihood.noise_covar.noise': torch.tensor(sigma2),
         'covar_module.base_kernel.base_kernel.lengthscale': torch.tensor(l),
