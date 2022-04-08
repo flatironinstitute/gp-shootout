@@ -46,4 +46,6 @@ to do: Minimally complete example...
 
 * rationalize interface for Philip dim-specific codes, move `getL()` into `kernels`
 * add Matern nu=3/2, 5/2 in all 3 dims and to tester - a Matern kernel with nu as an input.
+* CO2 dataset 
+* GPytorch (SKI) implementation
 
