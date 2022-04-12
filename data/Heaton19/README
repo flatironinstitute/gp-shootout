@@ -4,6 +4,21 @@ https://github.com/finnlindgren/heatoncomparison/tree/master/Data
 
 Heaton et al, A Case Study Competition Among Methods for Analyzing Large Spatial Data, Journal of Agricultural, Biological and Environmental Statistics, 2018: http://link.springer.com/article/10.1007/s13253-018-00348-w
 
+There are two similar temperature datasets:
+satellite (real meas) and simulated (from Matern nu=1/2 GP with nonzero mean).
+
+Their extraction, and simulated data, are apparently made by this R code:
+https://github.com/finnlindgren/heatoncomparison/blob/master/Code/FormatData/FormatData.R
+which has the line:
+myRFmod <- RMmatern(nu=0.5,scale=1/0.75,var=16.40771)+
+  RMnugget(var=0.05)+RMtrend(mean=44.49105)
+giving the Matern parameters, in spatial (LAT,LON) degree coordinates
+(falsely assumed isotropic), for the simulated data.
+Note the non-zero mean.
+
+
+
+
 Procedure to convert to CSV files
 ---------------------------------
 
