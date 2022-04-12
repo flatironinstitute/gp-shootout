@@ -28,6 +28,10 @@ catch
     fprintf('Error in finding cython\n Skipping python path\n');
 end
 
+if(exist('algs/GPMLE/FLAM/startup.m'))
+    run 'algs/GPMLE/FLAM/startup.m'
+end
+
 % terminal style
 format long g
 format compact
