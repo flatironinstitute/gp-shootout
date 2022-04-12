@@ -62,7 +62,7 @@ fprintf('LON*LAT box half-sizes %.3g*%.3g deg (%.3g*%.3g km)\n',lonsc,latsc,kmde
 fprintf('pixel sizes in km: %.4g*%.4g\n',diff(xa(1,1:2))*sc*kmdeg, diff(xa(2,[501 1]))*sc*kmdeg)
 if verb>1, figure; plot(xa(1,:),xa(2,:),'.'); title('all nodes xa'); end
 
-% select training and test targets in more sensible format...
+% select training and test targets in more sensible format... real satellite
 jtrain = find(~isnan(ar(:,4)));                    % "training" indices
 jtest = find(isnan(ar(:,4)) & ~isnan(ar(:,5)));   % test targets indices
 xtrg = xa(:,jtest);
@@ -70,7 +70,11 @@ x = xa(:,jtrain);          % "x" our name for training pts
 meas = ar(jtrain,5);      % satellite temperature data (Celcius)
 truetrg = ar(jtest,5);    % "
 save heaton19sat.mat x meas xtrg truetrg
-assert(sum(jtrain==find(~isnan(as(:,4)))))   % check same indices.
+% simulated (but note simulation used kernel incorrectly isotropic in LON,LAT)
+jtrain = find(~isnan(as(:,4)));                    % "training" indices
+jtest = find(isnan(as(:,4)) & ~isnan(as(:,5)));   % test targets indices
+xtrg = xa(:,jtest);
+x = xa(:,jtrain);          % "x" our name for training pts
 meas = as(jtrain,5);      % simulated temperature data (Celcius). Same x, xtrg
 truetrg = as(jtest,5);    % "
 save heaton19sim.mat x meas xtrg truetrg
