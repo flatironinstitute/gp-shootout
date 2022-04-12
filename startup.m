@@ -4,9 +4,12 @@
 [status,host] = system('uname -n');
 if strcmp(host(1:4),'ross')     % alex's setup
   addpath ~/numerics/finufft/matlab
+elseif strcmp(host(1:4),'C02G') % Manas' setup 
+  addpath ~/git/finufft/matlab
 else                       % default & all others (phillip)
   addpath ~/nufft_gps/finufft/matlab;
 end
+
 
 % access all of local tree
 h = fileparts(mfilename('fullpath'));
@@ -15,10 +18,14 @@ rmpath(genpath(fullfile(h,'.git')))
 
 % add to python path for python calls
 rel_path_to_ski = '/algs/SKI';
-path_to_ski = strcat(h, rel_path_to_ski);
-py_path = py.sys.path;
-if count(py_path, path_to_ski) == 0
-    insert(py_path, int32(0), path_to_ski);
+try
+    path_to_ski = strcat(h, rel_path_to_ski);
+    py_path = py.sys.path;
+    if count(py_path, path_to_ski) == 0
+        insert(py_path, int32(0), path_to_ski);
+    end
+catch
+    fprintf('Error in finding cython\n Skipping python path\n');
 end
 
 % terminal style
