@@ -36,8 +36,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 % Notes: 1) this code is a wrapper to separate dimension functions
 %   2) I changed the ker format from Philip
 % Todo:
-% *** test xtrg nonempty
-% *** figure how to switch off x as self-targs, since may be too slow?
+% *** figure how to switch off x as self-targs, since may make too slow?
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
@@ -48,7 +47,7 @@ if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
-xsol = [x; xtrg]';  % hack for now which adds meas pts to target list
+xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
                     % and transpose to Philip n*d shape
 if dim==1
   [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
