@@ -3,6 +3,5 @@
 	url = https://github.com/jiechenjiechen/RLCM
 
 [submodule "algs/GPMLE/FLAM"]
-    path = algs/GPMLE/FLAM
-    url = https://github.com/klho/FLAM
-
+	path = algs/GPMLE/FLAM
+	url = https://github.com/klho/FLAM
