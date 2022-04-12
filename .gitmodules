@@ -1,3 +1,8 @@
 [submodule "algs/RLCF/RLCM"]
 	path = algs/RLCF/RLCM
 	url = https://github.com/jiechenjiechen/RLCM
+
+[submodule "algs/GPMLE/FLAM"]
+    path = algs/GPMLE/FLAM
+    url = https://github.com/klho/FLAM
+
