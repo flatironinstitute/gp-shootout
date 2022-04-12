@@ -51,15 +51,20 @@ loncen = (max(ar(:,2))+min(ar(:,2)))/2;
 lonsc = (max(ar(:,2))-min(ar(:,2)))/2;
 latcen = (max(ar(:,3))+min(ar(:,3)))/2;
 latsc = (max(ar(:,3))-min(ar(:,3)))/2;
-sth = cos(2*pi*latcen/360);      % "sin(theta)" metric factor (lon vs lat)
+correctaspect = false;         % Heaton uses false; we believe true is better
+if correctaspect
+  sth = cos(2*pi*latcen/360);      % "sin(theta)" metric factor (lon vs lat)
+else, sth = 1.0;
+end
 sc = max(lonsc*sth,latsc);    % conversion from lat degrees so x in [-1,1]^2
-xa(1,:) = (ar(:,2)'-loncen) * (sth / sc);    % all x-coords, rel to center
-xa(2,:) = (ar(:,3)'-latcen) * (1.0 / sc);    %   " y
-% (note: use (sth/sc) above if want to duplicate incorrect aspect ratio of Heaton et al. GP regression)
+lonfac = sth/sc;              % factor we multiplied LON by to get x(1,:)
+latfac = 1/sc;                % factor we multiplied LAT by to get x(2,:)
+xa(1,:) = (ar(:,2)'-loncen) * lonfac;    % all x-coords, rel to center
+xa(2,:) = (ar(:,3)'-latcen) * latfac;    %   " y
 REkm = 6371;                     % typ radius of Earth, kilometer (1e-3 relerr)
 kmdeg = REkm*pi/180;             % km per latitude degree
 fprintf('LON*LAT box half-sizes %.3g*%.3g deg (%.3g*%.3g km)\n',lonsc,latsc,kmdeg*lonsc*sth,kmdeg*latsc)
-fprintf('pixel sizes in km: %.4g*%.4g\n',diff(xa(1,1:2))*sc*kmdeg, diff(xa(2,[501 1]))*sc*kmdeg)
+fprintf('pixel sizes in km: %.4g*%.4g (2nd only valid if correctaspect=true)\n',diff(xa(1,1:2))*sc*kmdeg, diff(xa(2,[501 1]))*sc*kmdeg)
 if verb>1, figure; plot(xa(1,:),xa(2,:),'.'); title('all nodes xa'); end
 
 % select training and test targets in more sensible format... real satellite
@@ -69,7 +74,7 @@ xtrg = xa(:,jtest);
 x = xa(:,jtrain);          % "x" our name for training pts
 meas = ar(jtrain,5);      % satellite temperature data (Celcius)
 truetrg = ar(jtest,5);    % "
-save heaton19sat.mat x meas xtrg truetrg
+save heaton19sat.mat x meas xtrg truetrg lonfac latfac
 % simulated (but note simulation used kernel incorrectly isotropic in LON,LAT)
 jtrain = find(~isnan(as(:,4)));                    % "training" indices
 jtest = find(isnan(as(:,4)) & ~isnan(as(:,5)));   % test targets indices
@@ -77,7 +82,7 @@ xtrg = xa(:,jtest);
 x = xa(:,jtrain);          % "x" our name for training pts
 meas = as(jtrain,5);      % simulated temperature data (Celcius). Same x, xtrg
 truetrg = as(jtest,5);    % "
-save heaton19sim.mat x meas xtrg truetrg
+save heaton19sim.mat x meas xtrg truetrg lonfac latfac
 
 if verb, figure;  % show processed data
   load heaton19sat
