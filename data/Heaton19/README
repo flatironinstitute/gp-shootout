@@ -1,0 +1,31 @@
+2D Satellite temperature data with N about 1e5 from
+
+https://github.com/finnlindgren/heatoncomparison/tree/master/Data
+
+Heaton et al, A Case Study Competition Among Methods for Analyzing Large Spatial Data, Journal of Agricultural, Biological and Environmental Statistics, 2018: http://link.springer.com/article/10.1007/s13253-018-00348-w
+
+Procedure to convert to CSV files
+---------------------------------
+
+Install R.
+From within R:
+
+> load("AllSatelliteTemps.RData")
+> load("SatelliteTemps.RData")
+> load("AllSimulatedTemps.RData")
+> load("SimulatedTemps.RData")
+
+> ls()
+[1] "all.sat.temps" "all.sim.data"  "sat.temps"     "sim.data"
+
+> write.csv(all.sat.temps,"AllSatelliteTemps.csv")
+> write.csv(sat.temps,"SatelliteTemps.csv")
+> write.csv(all.sim.data,"AllSimulatedTemps.csv")
+> write.csv(sim.data,"SimulatedTemps.csv")
+
+Total CSV files about 35 MB.
+
+The files "All" include training+test points. The files without "All" are just
+training points.
+
+Now please see MATLAB code processcsv.m for wrangling into sensible format.

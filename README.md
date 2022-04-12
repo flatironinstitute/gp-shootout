@@ -18,8 +18,13 @@ Required dependencies:
 
 Method dependencies:
 
-* For EFGP: FINUFFT (version 2.0 or later; please specify its location in `startup.m`)
-* For GPyTorch: Python with PyTorch and GPyTorch
+* For EFGP: FINUFFT (version 2.0 or later; please specify its location in `startup.m`).
+* For SKI: Python 3.7, 3.8, or 3.9 (not 3.10, at least for MATLAB 2021b), with
+python environment in which MATLAB was opened to include:
+   - numpy
+   - torch
+   - gpytorch
+   - pytorch
 * ...
 
 To test your installation from MATLAB shell: `startup; test_all`
