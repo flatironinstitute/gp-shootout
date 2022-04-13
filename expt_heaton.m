@@ -17,7 +17,7 @@ var = 16.40771;     % overall prior variance = covar kernel C(0)
 l = (1/0.75)*lonfac;   % kernel lengthscale, scaled by our x-conversion factor
 dim = 2;
 ker = Matern_ker(dim,1/2,l,var);
-opts.tol = 1e-3;   % alg param: crude - has big effect on CPU time for nu=1/2
+opts.tol = 1e-4;   % alg param: crude - has big effect on CPU time for nu=1/2
                    % *** issue: even tol=1e-3 makes more smoothing on ytrg.mean
 
 fprintf('\ntry mu-shifted EFGP on Heaton: N=%d (Ntrg=%d), sigma=%.3g, tol=%.3g...\n',N,Ntrg,sigma,opts.tol)
