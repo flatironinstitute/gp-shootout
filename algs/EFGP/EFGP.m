@@ -54,7 +54,7 @@ if dim==1
 elseif dim==2
   [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  error('dim=3 not implemented!');
+  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end
@@ -72,7 +72,7 @@ sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 opts.tol = 1e-8;
 
-for dim = 1:2   % ..........
+for dim = 1:3   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
