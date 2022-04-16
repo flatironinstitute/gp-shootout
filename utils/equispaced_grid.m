@@ -7,13 +7,13 @@ function xs = equispaced_grid(dim, n)
     if dim == 2
         x = linspace(0, 1, n);
         [xx, yy] = meshgrid(x);
-        xs = [reshape(xx, 1, []), reshape(yy, 1, [])];
+        xs = [reshape(xx, 1, []); reshape(yy, 1, [])];
     end
 
     if dim == 3
         x = linspace(0, 1, n);
         [xx, yy, zz] = meshgrid(x);
-        xs = [reshape(xx, 1, []), reshape(yy, 1, []), reshape(zz, 1, [])];
+        xs = [reshape(xx, 1, []); reshape(yy, 1, []); reshape(zz, 1, [])];
     end
 
 end

@@ -29,7 +29,7 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(xs, y, sigmasq, k
   k = ker.k; khat = ker.khat;
 
     tic_precomp = tic;
-    tmax = 1;
+    tmax = sqrt(3);
     xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
