@@ -30,21 +30,10 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 
     % support of functionin time domain
     tic_precomp = tic;
-    Ltime = getL(eps, k);
-    Ltime = max(1, Ltime);
-    
-    % nyquist
-    hnyq = 1/(2*Ltime);
-    
-    % m must be odd!
-    Lfreq = getL(eps, khat);
-
-    % discretization in Fourier domain
-    m = 2*Lfreq/hnyq + 1;
-    m = 2*ceil(m/2) + 1;
-    xis = linspace(-Lfreq, Lfreq, m);
+    tmax = 1;
+    xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
-    %%%fprintf('number of basis functions =\n %.3g\n', m^2)
+    m = numel(xis);
     [xis_xx, xis_yy] = meshgrid(xis);
 
     const = h;
@@ -52,7 +41,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
     ws = sqrt(khat(rs)) * const;
     
     % precomputation for fast apply of X*X
-    Gf = getGf(xs, xis);
+    Gf = getGf(eps, xs, xis);
     
     % conjugate gradient
     ws_flat = reshape(ws, m^2, 1);
@@ -87,7 +76,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 end
 
 
-function [Gf] = getGf(xs, z)
+function [Gf] = getGf(eps, xs, z)
     N = length(xs);
     m = length(z);
     % determine all the differences where kernel is to be evaluated...
@@ -97,10 +86,10 @@ function [Gf] = getGf(xs, z)
     % parameters for fft
     c = 0i + ones(N, 1);
     isign = -1;
-    eps = 1e-10;
+    tol = eps/10;
     
     o.modeord = 1;
-    Gf = finufft2d1(2*pi*xs(:,1)*h,2*pi*xs(:,2)*h,c,isign,eps,2*m-1, 2*m-1, o);
+    Gf = finufft2d1(2*pi*xs(:,1)*h,2*pi*xs(:,2)*h,c,isign,tol,2*m-1, 2*m-1, o);
     Gf = fftn(Gf.');
 end
 

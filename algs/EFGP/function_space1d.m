@@ -29,22 +29,11 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
   N = numel(y);
 
     tic_precomp = tic;
-    % find support of function in time domain
-    Ltime = getL(eps, k);
-    Ltime = max(1, Ltime);
-
-    % nyquist
-    hnyq = 1/(2*Ltime);
-    
-    % find numerical bandlimit via bisection
-    Lfreq = getL(eps, khat);
-    
-    % number of nodes for nyquist, should be odd
-    m = 2*Lfreq/hnyq + 1;
-    m = 2*ceil(m/2) + 1;
-    xis = linspace(-Lfreq, Lfreq, m);
+    tmax = 1;
+    xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
-    
+    m = numel(xis);
+
     % set scaling of basis functions
     ws = sqrt(khat(xis)' * h);
     

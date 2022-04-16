@@ -29,21 +29,10 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(xs, y, sigmasq, k
   k = ker.k; khat = ker.khat;
 
     tic_precomp = tic;
-    % support of functionin time domain
-    Ltime = getL(eps, k);
-    Ltime = max(1, Ltime);
-
-    % nyquist
-    hnyq = 1/(2*Ltime);
-    
-    % m must be odd!
-    Lfreq = getL(eps, khat);
-
-    % discretization in Fourier domain
-    m = 2*Lfreq/hnyq + 1;
-    m = 2*ceil(m/2) + 1;
-    xis = linspace(-Lfreq, Lfreq, m);
+    tmax = 1;
+    xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
+    m = numel(xis);
     [xis_xx, xis_yy, xis_zz] = meshgrid(xis, xis, xis);
 
     rs = sqrt(xis_xx.^2 + xis_yy.^2 + xis_zz.^2);
