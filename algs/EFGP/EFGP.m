@@ -92,13 +92,19 @@ for dim = 1:3   % ..........
   fprintf('        rms efgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
 
   % show pics
-  if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
-  elseif dim==2, figure;
+  figure;
+  if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
+  elseif dim==2
     subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
     caxis([-1 1]); axis equal tight
     subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
     caxis([-1 1]); axis equal tight
+  elseif dim==3
+    subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
+    caxis([-1 1]); axis equal tight
+    subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
+    caxis([-1 1]); axis equal tight
   end
   title(sprintf('EFGP test %dd',dim)); drawnow;
-    
+
 end             % ..........
