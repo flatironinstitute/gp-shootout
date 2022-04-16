@@ -26,13 +26,13 @@ if ~ismember(nu, [0.5, 1.5, 2.5]), error('for now, nu must be in [0.5, 1.5, 2.5]
 if nargin<4, var = 1.0; end    % var is overall scale factor
 
 if nu == 0.5
-    ker.k = @(d) var*exp( (-1/l) * d);                                % d = |x|
+    ker.k = @(d) var*exp( (-1/l) * abs(d));                                % d = |x|
     ker.fam = 'matern12';
 elseif nu == 1.5
-    ker.k = @(d) var*(1 + sqrt(3) .* d ./ l) .* exp(-sqrt(3) .* d ./ l);
+    ker.k = @(d) var*(1 + sqrt(3) .* abs(d) ./ l) .* exp(-sqrt(3) .* abs(d) ./ l);
     ker.fam = 'matern32';
 elseif nu == 2.5
-    ker.k = @(d) var*(1 + sqrt(5).*d./l + 5.*d.^2/(3*l^2)) .* exp(-sqrt(5) .* d / l);
+    ker.k = @(d) var*(1 + sqrt(5).*abs(d)./l + 5.*abs(d).^2/(3*l^2)) .* exp(-sqrt(5) .* abs(d) / l);
     ker.fam = 'matern52';
 end
 
