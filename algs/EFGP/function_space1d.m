@@ -30,7 +30,8 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 
     tic_precomp = tic;
     tmax = 1;
-    xis = get_xis(ker, eps, tmax);
+    dim = 1;
+    xis = get_xis(dim, ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
 

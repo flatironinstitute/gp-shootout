@@ -13,8 +13,8 @@ function L = getL(eps, kern)
 % L - approximate value at which kern(L) = eps
 
 
-%  eps = eps*kern(0);   % absolute value to match - AHB tried
-  
+%  eps = eps*kern(0);   % absolute value to match - AHB tried ---- huh?
+
   % make sure starting upper bound is large enough
   a = 0;
   b = 1000;

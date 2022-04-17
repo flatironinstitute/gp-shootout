@@ -29,8 +29,9 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(xs, y, sigmasq, k
   k = ker.k; khat = ker.khat;
 
     tic_precomp = tic;
-    tmax = sqrt(3);
-    xis = get_xis(ker, eps, tmax);
+    tmax = 1;
+    dim = 3;
+    xis = get_xis(dim, ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
     [xis_xx, xis_yy, xis_zz] = meshgrid(xis, xis, xis);

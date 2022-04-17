@@ -30,8 +30,9 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 
     % support of functionin time domain
     tic_precomp = tic;
-    tmax = sqrt(2);
-    xis = get_xis(ker, eps, tmax);
+    tmax = 1;
+    dim = 2;
+    xis = get_xis(dim, ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
     [xis_xx, xis_yy] = meshgrid(xis);
