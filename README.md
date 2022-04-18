@@ -43,8 +43,6 @@ to do: minimally complete example...
 
 ### To do
 
-* make error benchmarks for methods, vs naive_gp, for N<=1e4 probs
-   ... or just use dense K mat to check lin sys residual for methods.
 * other top-level fig-generating driver scripts
 * covar output to `naive_gp`?
 * datasets -> `data/*`
@@ -59,3 +57,4 @@ to do: minimally complete example...
 * GPytorch (SKI) implementation
 * Heaton et al. 2019 comparison datasets (two of), 2D, N=1e5
 * posterior variances at target points for gp_naive
+* testing routines for comparing methods to gp_naive for small problems
