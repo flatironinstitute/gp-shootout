@@ -26,7 +26,8 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes use
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for various steps
+%     cputime - list of times in seconds for gaussian process regression
+%     and evaluation of posterior mean at target points
 %     iter - # iterations needed
 %
 % If called without arguments, does a self-test.

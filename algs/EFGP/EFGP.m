@@ -28,7 +28,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes use
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for various steps
+%     cputime - list of times in seconds for (precomputation, conjugate
+%     gradient, evaluation of posterior means)
 %     iter - # iterations needed
 %
 % If called without arguments, does a self-test.
@@ -50,11 +51,11 @@ n = size(xtrg,2);   % # new targets
 xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
                     % and transpose to Philip n*d shape                    
 if dim==1
-  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
-  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end
@@ -84,7 +85,7 @@ for dim = 1:3   % ..........
   % run o(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))

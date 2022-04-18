@@ -1,4 +1,4 @@
-function [y] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
+function [y, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
 % [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -6,7 +6,7 @@ function [y] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  translation-invariant isotropic prior kernel ker (via a fast direct 
 %  solver used to invert the covariance matrix),
 %  conditioned on the y-values meas at the set of points x, in
-%  spatial dimension 1,2 or 3. FLAM library is a prerequisite.
+%  spatial dimension 1,2 or 3. FLAM library is a prerequisite -- https://github.com/klho/FLAM
 %
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -21,6 +21,7 @@ function [y] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %         tol - desired tolerance, eg 1e-6
 %         occ - max number of points per box, (default 64)
 %         p - number of proxy points;
+%         v - verbose;
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -75,11 +76,18 @@ Afun = @(i,j)Afunflam(i,j,x,ker,sigmasq);
 pxyfun = @(x,slf,nbr,l,ctr)pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 
+% verbose mode?
+if (isfield(opts,'v') && (opts.v == true))
+    opts_use = struct('symm','p','verb',verb);
+else
+    opts_use = struct('symm', 'p');
+end
 
-opts_use = struct('symm','p','verb',verb);
+tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
 alpha = rskelf_sv(F,meas);
 y.mean = meas - alpha*sigmasq;
+info.cpu_time = toc(tt1);
 
 
     
@@ -103,7 +111,7 @@ for dim = 1:2   % ..........
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   ker = SE_ker(dim,l);
-  y = FLAMGP(x, meas, sigma^2, ker, [], opts);
+  [y, ~] = FLAMGP(x, meas, sigma^2, ker, [], opts);
   % run o(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   %fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))

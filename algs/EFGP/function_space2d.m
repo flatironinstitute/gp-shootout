@@ -70,6 +70,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 
     % package timings
     time_info = [t_precomp, t_cg, t_post];
+    time_info = [time_info, sum(time_info)];
 
     % convert to real
     yhat = real(yhat);
