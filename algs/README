@@ -2,7 +2,7 @@
 Notes about methods and potential codes to try:
 
 
-* Andrew Gordon Wilson, Hannes Nickisch. 
+* SKI: Andrew Gordon Wilson, Hannes Nickisch. 
 Kernel Interpolation for Scalable Structured Gaussian Processes (KISS-GP).
 https://arxiv.org/abs/1503.01057
 and implementation:
