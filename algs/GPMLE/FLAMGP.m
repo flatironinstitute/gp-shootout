@@ -1,7 +1,7 @@
 function [y] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
-% [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
+% [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  performs Gaussian process regression using an arbitrary smooth(ish)
 %  translation-invariant isotropic prior kernel ker (via a fast direct 
 %  solver used to invert the covariance matrix),
