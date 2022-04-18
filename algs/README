@@ -2,6 +2,13 @@
 Notes about methods and potential codes to try:
 
 
+* Andrew Gordon Wilson, Hannes Nickisch. 
+Kernel Interpolation for Scalable Structured Gaussian Processes (KISS-GP).
+https://arxiv.org/abs/1503.01057
+and implementation:
+https://gpytorch.ai/
+
+
 * Minden et al 2017 has old unsupported code, depends on Ken Ho's FLAM:
 https://github.com/asdamle/GPMLE/
 Uses N=2^17 samples of 225GB ocean NOAA dataset.

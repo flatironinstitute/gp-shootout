@@ -28,7 +28,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes use
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for various steps
+%     cputime - list of times in seconds for (precomputation, conjugate
+%     gradient, evaluation of posterior means)
 %     iter - # iterations needed
 %
 % If called without arguments, does a self-test.
@@ -48,13 +49,13 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
 xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
-                    % and transpose to Philip n*d shape
+                    % and transpose to Philip n*d shape                    
 if dim==1
-  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
-  [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  error('dim=3 not implemented!');
+  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end
@@ -72,7 +73,7 @@ sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 opts.tol = 1e-8;
 
-for dim = 1:2   % ..........
+for dim = 1:3   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
@@ -84,7 +85,7 @@ for dim = 1:2   % ..........
   % run o(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
@@ -92,13 +93,19 @@ for dim = 1:2   % ..........
   fprintf('        rms efgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
 
   % show pics
-  if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
-  elseif dim==2, figure;
+  figure;
+  if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
+  elseif dim==2
     subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
     caxis([-1 1]); axis equal tight
     subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
     caxis([-1 1]); axis equal tight
+  elseif dim==3
+    subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
+    caxis([-1 1]); axis equal tight
+    subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
+    caxis([-1 1]); axis equal tight
   end
   title(sprintf('EFGP test %dd',dim)); drawnow;
-    
+
 end             % ..........

@@ -1,9 +1,9 @@
 % script to test all kernel functions have roughly the right Fourier transform,
 % using equispaced quadrature (PTR) Kronecker product over dims.
 % For now, only SE kernel and Matern-1/2.
-% *** to do: unit tests, add smoother Materns.
-% Barnett 4/5/22
-clear; disp('test_kers: user should check errors not O(1), checks prefactors.');
+% *** to do: more formal unit tests
+% Barnett 4/5/22 started.
+clear; disp('test_kers: user should visually check that the below errors are not O(1). This checks that prefactors are not O(1) wrong...');
 
 l = 0.1;     % spatial scale (for all kernels that have one)
 xid = 3.0;   % freq mag |xi| to test (let's make all kernels use same for now)
@@ -26,13 +26,13 @@ for type=1:4   % -------------- kernel types --------------
         nam = 'Matern nu=3/2';
         nu = 1.5;
         ker = Matern_ker(dim, nu, l);
-        h = l/5;    % crappy convergence
+        h = l/5;    % less crappy convergence
         tol = 1e-5; L = l*log(1/tol);   % max x to get tails to err tol
       case 4
         nam = 'Matern nu=5/2';
         nu = 2.5;
         ker = Matern_ker(dim, nu, l);
-        h = l/5;    % crappy convergence
+        h = l/5;    % even less crappy convergence
         tol = 1e-5; L = l*log(1/tol);   % max x to get tails to err tol
       otherwise
         error(sprintf('ker type %d not implemented in test_kers!',type));
