@@ -1,0 +1,48 @@
+Algorithms:
+EFGP
+SKI
+FLAM
+SSGP-?
+RLCF
+
+Theorems:
+
+Paper writing:
+Comment about determinants and alternate ways to do inference over parameter spaces
+Cite Embarrassingly parallel GP
+
+
+
+Examples
+Accuracy: 1d, Gaussian and matern
+	N can be as high as 1e4
+	Error estimate comparison for self points, using eps/N scaling match to estimate
+	Extension of error to other points, scaling match to estimate extrapolated to targets
+
+Timing scaling EFGP:
+Gaussian, Matern: 1d,2d,3d
+N and eps variation 
+
+Comparison plots:
+        Ground truth: Our method run to convergence
+	Error metric: posterior mean at new targets compared to ground truth
+	Timing consideration: new targets/ O(N/10) targets/ time for posterior mean per target
+                T_precomp + t_targ;
+  	1d, 2d or 3d. 
+
+Tables for large N comparison :
+     More detailed timing breakdown, fixed N, fixed eps, RAM, different timing considerations, error
+
+
+For all algs:
+Memory used
+Precomp time -> solving linear system
+Per Target time -> time taken to compute posterior mean at all targets 
+Error target 
+Other params: CG iteration
+
+Memorygraph
+
+Big examples:
+CO2 data
+
