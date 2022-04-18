@@ -1,0 +1,42 @@
+
+
+
+Fast det of Toeplitz?
+
+Durbin-Levinson is first fast alg.
+If SPD,
+Can Cholesky T = L^T D L where diag(L) = 1. and D is diag.
+Then det(T) = prod(diag(D)).
+
+Gene H. Golub, Charles F. Van Loan, Matrix Computations, Third Edition, Algorithm 4.7.1 (Durbin).
+
+See
+Krishnamoorthy2015blog
+
+Ming Gu has slides:
+https://math.berkeley.edu/~mgu/Semi
+
+Xia + Gu:  superfast -> Cauchy mat, HSS, etc:
+https://www.math.purdue.edu/~xiaj/work/toeprs.pdf
+
+Cinkir 2014 has the banded Toeplitz case, which is bandwidth^3 cost,
+exact det.
+
+For lin sys w/ Toeplitz:
+https://en.wikipedia.org/wiki/Levinson_recursion
+is O(N^2)
+
+But its higher-dim product form would be a mess -> block Toeplitz
+with Toeplitz blocks (2D).
+
+
+FOr us, the smaller I.sigma^2 + X^*X matrix is symm pos def, good!
+
+IDEAS:
+* Ask Townsend
+* check for codes for Cholesky of SPD Toeplitz, try in 1D.
+* try out Krishnamoorthy matlab central code - invchol_durbin.
+      - but need to change to return D in  L^T D L ... :(
+
+
+
