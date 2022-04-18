@@ -48,7 +48,7 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
 xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
-                    % and transpose to Philip n*d shape
+                    % and transpose to Philip n*d shape                    
 if dim==1
   [info.beta, info.xis, yhat, info.iter, info.cputime] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
