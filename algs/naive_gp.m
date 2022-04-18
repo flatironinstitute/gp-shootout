@@ -18,17 +18,17 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 %  xtrg - [optional, or may be empty] targets points, d*n real array for d dims.
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
-%         getcovar - if true, compute conditional covariances [*** to implement]
+%         getvar - if true, compute conditional variances at xtrg [*** todo implement covariances]
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
 %     mean - posterior mean vector, N*1
 %     alpha - N*1 vector of weights for reconstruction of mean
 %     meanbook - posterior mean vector, N*1, computed by "book formula" K*alpha
-%     covar - posterior covariance, N*N. [optional]
+%     covar - posterior covariance, N*N. ***todo [optional]
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1, computed by book formula
-%     covar - posterior covariance, n*n. [optional]
+%     var - posterior variances, n. [optional] ***todo: posterior covariance
 %  info - diagnostic struct containing fields:
 %     cputime - list of times in seconds for fill, solve + y eval, trg eval, etc.
 %
@@ -50,24 +50,38 @@ y.meanbook = K*alpha;                      % the book formula, slow, unstable
 info.cputime(2) = toc;
 
 ytrg = [];
-if do_trg                              % *** untested
-  [~,n] = size(xtrg);        % # targs
+if do_trg
+  [~,ntrg] = size(xtrg);        % # targs
   tic;
   B = densekermat(ker.k,xtrg,x);   %  n-by-N
   ytrg.mean = B * alpha;    % do the GP sum, naively
   info.cputime(3) = toc;
 end
 
+if opts.get_var
+    if dim == 1
+        kvec = ker.k(x - xtrg(:));
+        ytrg.var = ker.k(0) - diag(kvec * ((K + sigmasq*eye(N)) \ kvec'));
+    else
+        ytrg.var = zeros(ntrg, 1);
+        for i=1:ntrg
+            % norms of distances to each point
+            norms = sqrt(sum((x - xtrg(:, i)).^2, 1));
+            kvec = ker.k(norms);
+            ytrg.var(i) = ker.k(0) - kvec * ((K + sigmasq*eye(N)) \ kvec');
+        end
+    end
+end
 
 %%%%%%%%%%
 function test_naive_gp   % basic tests for now
-N = 3e3;        % problem size
+N = 3e1;        % problem size
 l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 
-for dim = 1:3   % ..........
+for dim = 2:2   % ..........
   fprintf('\ntest naive_gp, sigma=%.3g, dim=%d...\n',sigma,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
@@ -77,7 +91,8 @@ for dim = 1:3   % ..........
 
   ntrgs = 20;
   xtrg = equispaced_grid(dim, ntrgs);
-  [y, ytrg, info] = naive_gp(x, meas, sigma^2, ker, xtrg);
+  opts.get_var = true;
+  [y, ytrg, info] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms resid of lin sys   %.3g\n', rms(y.mean-y.meanbook))
   fprintf('        rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
@@ -87,6 +102,7 @@ for dim = 1:3   % ..........
   % show pics
   if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
       plot(xtrg,ytrg.mean,'-r');
+      errorbar(xtrg, ytrg.mean, 2*sqrt(ytrg.var));
   elseif dim==2, figure;
     subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
     caxis([-1 1]); axis equal tight
