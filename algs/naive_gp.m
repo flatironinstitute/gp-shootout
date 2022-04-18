@@ -35,6 +35,7 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 % If called without arguments, does a self-test
 if nargin==0, test_naive_gp; return; end
 do_trg = (nargin>=5 && ~isempty(xtrg));
+do_var = (~isempty(opts) && isfield(opts,'getvar'));
 [dim,N] = size(x);
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 if N>1e4, warning('N getting too big for naive method!'); end
@@ -58,12 +59,14 @@ if do_trg
   info.cputime(3) = toc;
 end
 
-if opts.get_var
+% posterior variances at data points
+if do_var
     if dim == 1
         kvec = ker.k(x - xtrg(:));
         ytrg.var = ker.k(0) - diag(kvec * ((K + sigmasq*eye(N)) \ kvec'));
     else
         ytrg.var = zeros(ntrg, 1);
+        % the following can probably be vectorized
         for i=1:ntrg
             % norms of distances to each point
             norms = sqrt(sum((x - xtrg(:, i)).^2, 1));
@@ -91,7 +94,7 @@ for dim = 2:2   % ..........
 
   ntrgs = 20;
   xtrg = equispaced_grid(dim, ntrgs);
-  opts.get_var = true;
+  opts.getvar = true;
   [y, ytrg, info] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms resid of lin sys   %.3g\n', rms(y.mean-y.meanbook))
