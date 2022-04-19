@@ -37,14 +37,14 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
   tphx = 2*pi*h*(x - xcen);
   tphxsol = 2*pi*h*(xsol - xcen);
   
-  % weight scaling of Fourier basis functions
+  % khat & quadr weight scaling of Fourier basis functions
   ws = sqrt(khat(xis)' * h);
     
     % construct first row and column of toeplitz matrix for fast apply
     nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant
     c = complex(ones(N, 1));      % unit weights
-    XtXrow = finufft1d1(tphx, c, +1, nuffttol, 2*m-1)'; 
-    Gf = fftn(XtXrow.');
+    XtXcol = finufft1d1(tphx, c, -1, nuffttol, 2*m-1);
+    Gf = fftn(XtXcol);          % no conj; equiv to isign=-1
     
     % construct rhs = X^*y, with NUFFT
     isign = -1;
@@ -63,13 +63,11 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
     tmpvec = ws .* beta;
     tic_post = tic;
     yhat = finufft1d2(tphxsol, +1, nuffttol, tmpvec);
+    yhat = real(yhat);
     t_post = toc(tic_post);
 
     time_info = [t_precomp, t_cg, t_post];
     time_info = [time_info, sum(time_info)];
-
-    % convert to real
-    yhat = real(yhat);
 end
 
 

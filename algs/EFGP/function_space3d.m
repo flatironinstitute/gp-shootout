@@ -1,7 +1,7 @@
 function [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ker, eps, xsol)
 % FUNCTION_SPACE3D   equispaced Fourier NUFFT-based GP regression in 3D
 %
-% [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
+% [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ker, eps, xsol)
 % performs Gaussian process regression in 3D using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
 % performing regression.
@@ -37,77 +37,51 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ke
   tphx = 2*pi*h*(x - xcen);            % note broadcast over rows
   tphxsol = 2*pi*h*(xsol - xcen);      % "
 
-  % weights of Fourier basis funcs
+  % khat & quadr weights of Fourier basis funcs
   rs = sqrt(xis_xx.^2 + xis_yy.^2 + xis_zz.^2);
-  dim = 3; ws = sqrt(khat(rs) * h^dim);
+  dim = 3; ws = sqrt(ker.khat(rs) * h^dim);
     
   % precomputation for fast apply of X*X
   nuffttol = eps/10;
   Gf = getGf3d(nuffttol, tphx, m);
   
-    % conjugate gradient
-    ws_flat = reshape(ws, m^3, 1);
-    Afun = @(a) ws_flat .* apply_xtx3d(Gf, ws_flat .* a) + sigmasq .* a;
+  % conjugate gradient
+  ws_flat = ws(:);
+  Afun = @(a) ws_flat .* apply_xtx3d(Gf, ws_flat .* a, m) + sigmasq .* a;
     
-    isign = -1;
-    a = 2*pi*xs(:,2)*h;
-    b = 2*pi*xs(:,1)*h;
-    c = 2*pi*xs(:,3)*h;
-    tol = eps/10;
-    rhs2 = finufft3d1(a, b, c, y, isign, nuffttol, m, m, m);
-    rhs2 = reshape(rhs2 .* ws, [], 1); 
-    t_precomp = toc(tic_precomp);
+  isign = -1;
+  rhs = finufft3d1(tphx(:,1),tphx(:,2),tphx(:,3), y, isign, nuffttol, m, m, m);
+  rhs = reshape(rhs .* ws, [], 1);
+  t_precomp = toc(tic_precomp);
     
     % solve linear system
     tic_cg = tic; 
-    tol = eps/10;
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs2, tol, m^3);
+    cgtol = eps;                  % I find ok; NB was eps/10, vs eps in dim=1,2
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, m^3);
     t_cg = toc(tic_cg);
 
     % evaluate posterior mean 
     tic_post = tic;
-    tmpvec = ws .* reshape(beta, [m, m, m]);
+    wsbeta = ws .* reshape(beta, [m, m, m]);
     isign = +1;
-    tol = eps/10;
-    a = 2*pi*h * xsols(:,2);
-    b = 2*pi*h * xsols(:,1);
-    c = 2*pi*h * xsols(:,3);
-    yhat = finufft3d2(a, b, c, isign, nuffttol, tmpvec);
+    yhat = finufft3d2(tphxsol(:,1),tphxsol(:,2),tphxsol(:,3), isign, nuffttol, wsbeta);
+    yhat = real(yhat);
     t_post = toc(tic_post);
 
     % package times for output
     time_info = [t_precomp, t_cg, t_post];
     time_info = [time_info, sum(time_info)];
-
-    % convert to real
-    yhat = real(yhat);
-
 end
 
 
-function [Gf] = getGf3d(nuffttol, xs, z)
-    N = length(xs);
-    m = length(z);
-    % determine all the differences where kernel is to be evaluated...
-    % ...for both x and y directions 
-    xs_tmp = z - z(1);
-    xs_lrg = [xs_tmp,-xs_tmp(end:-1:2)];
-    
-    % precompute elements of convolution vector for quick apply
-    [ds_xx, ds_yy, ds_zz] = ndgrid(xs_lrg);
-    ds_xx_flat = reshape(ds_xx, [], 1);
-    ds_yy_flat = reshape(ds_yy, [], 1);
-    ds_zz_flat = reshape(ds_zz, [], 1);
-
-    % parameters for fft
+function [Gf] = getGf3d(nuffttol, tphx, m)
+% array to multiply by on the 3D FFT side that convolves with Toeplitz col blk
+    N = size(tphx,1);
     c = complex(ones(N, 1));            % unit strengths
     isign = -1;
-    x = 2*pi*xs(:,1);
-    y = 2*pi*xs(:,2);
-    z = 2*pi*xs(:,3);
-    Gf = finufft3d3(x,y,z,c,isign,nuffttol,ds_xx_flat,ds_yy_flat,ds_zz_flat);
-    Gf = reshape(Gf, m*2 - 1, m*2 - 1, m*2 - 1);
-    Gf = fftn(Gf);
+    o.modeord = 1;
+    XtXcol_blk = finufft3d1(tphx(:,1),tphx(:,2),tphx(:,3), c, isign, nuffttol, 2*m-1,2*m-1,2*m-1, o);
+    Gf = fftn(XtXcol_blk);
 end
 
 
