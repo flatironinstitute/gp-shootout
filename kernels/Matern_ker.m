@@ -8,6 +8,8 @@ function ker = Matern_ker(dim, nu, l, var)
 %    khat - a function handle to its d-dim isotropic Fourier transform (mapping
 %           wavevector magnitudes to values).
 %    fam -  a descriptive string.
+%    l, nu - lengthscale, smoothness param
+%    dim  - spatial dimension.
 %  nu can take one of only three values: 1/2, 3/2, or 5/2, currently.
 %  See the paper for the Fourier transform convention (the 2pi is "upstairs").
 %
@@ -44,3 +46,4 @@ ker.khat = @(xid) var*scaling * (2*nu/l^2 + (4*pi^2) * xid.^2).^(-(nu + dim/2));
 % attributes to extract when using certain algorithms (e.g. ski)
 ker.l = l;
 ker.nu = nu;
+ker.dim = dim;

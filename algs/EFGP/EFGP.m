@@ -82,6 +82,7 @@ for dim = 1:3   % ..........
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
+  % x = x + 2.101;   % test translation
   ker = SE_ker(dim,l);
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression
@@ -94,20 +95,21 @@ for dim = 1:3   % ..........
   % make sure we're computing gp regression accurately
   fprintf('        rms efgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
 
-  % show pics
-  figure;
-  if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
-  elseif dim==2
-    subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
-    caxis([-1 1]); axis equal tight
-    subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
-    caxis([-1 1]); axis equal tight
-  elseif dim==3
-    subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
-    caxis([-1 1]); axis equal tight
-    subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
-    caxis([-1 1]); axis equal tight
+  if 0       % show pics
+    figure;
+    if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
+    elseif dim==2
+      subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
+      caxis([-1 1]); axis equal tight
+      subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
+      caxis([-1 1]); axis equal tight
+    elseif dim==3
+      subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
+      caxis([-1 1]); axis equal tight
+      subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
+      caxis([-1 1]); axis equal tight
+    end
+    title(sprintf('EFGP test %dd',dim)); drawnow;
   end
-  title(sprintf('EFGP test %dd',dim)); drawnow;
-
+  
 end             % ..........

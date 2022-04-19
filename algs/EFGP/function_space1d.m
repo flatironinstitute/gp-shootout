@@ -29,9 +29,8 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
   N = numel(y);
 
     tic_precomp = tic;
-    tmax = 1;
-    dim = 1;
-    xis = get_xis(dim, ker, eps, tmax);
+    tmax = 1;          % *** length of domain containing x & xtrg; make general
+    xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
 

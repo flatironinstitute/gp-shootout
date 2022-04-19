@@ -6,7 +6,10 @@ function ker = SE_ker(dim,l)
 %  Fourier transform (mapping wavevector magnitudes to values).
 %  Latter uses Phillip's convention. For squared-exponential kernel (Gaussian),
 %  l is the distance scale.
-%  The struct ker also contains: l - lengthscale, and fam = string name.
+%  The struct ker also contains:
+%      l   - lengthscale
+%      fam - string name
+%      dim - spatial dimension
 %
 % To test see: TEST_KERS
 
@@ -16,3 +19,4 @@ ker.k = @(d) exp( (-0.5/l^2) * d.^2);                                % d = |x|
 ker.khat = @(xid) (2*pi*l^2)^(dim/2) * exp( (-2*pi^2*l^2) * xid.^2); % |xi|
 ker.fam = 'squared-exponential';
 ker.l = l;
+ker.dim = dim;

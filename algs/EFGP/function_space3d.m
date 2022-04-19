@@ -1,13 +1,13 @@
 function [beta, xis, yhat, iter, time_info] = function_space3d(xs, y, sigmasq, ker, eps, xsols)
-% FUNCTION_SPACE2D   equispaced Fourier NUFFT-based GP regression in 2D
+% FUNCTION_SPACE3D   equispaced Fourier NUFFT-based GP regression in 3D
 %
 % [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
-% performs Gaussian process regression in 2d using equispaced
+% performs Gaussian process regression in 3D using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
-% performing regression. 
+% performing regression.
 %
 % Inputs:
-% xs - N x 2 array of location of observations
+% xs - N x 3 array of location of observations
 % y - N x 1 array of (noisy) observations
 % sigmasq - residual variance for GP regression
 % ker - struct with ker.k is the covariance kernel and ker.khat is its
@@ -30,8 +30,7 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(xs, y, sigmasq, k
 
     tic_precomp = tic;
     tmax = 1;
-    dim = 3;
-    xis = get_xis(dim, ker, eps, tmax);
+    xis = get_xis(ker, eps, tmax);
     h = xis(2) - xis(1);
     m = numel(xis);
     [xis_xx, xis_yy, xis_zz] = meshgrid(xis, xis, xis);
