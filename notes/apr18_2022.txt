@@ -6,12 +6,11 @@ SSGP-?
 RLCF
 
 Theorems:
+Alex + Philip -> almost done
 
 Paper writing:
 Comment about determinants and alternate ways to do inference over parameter spaces
 Cite Embarrassingly parallel GP
-
-
 
 Examples
 Accuracy: 1d, Gaussian and matern
@@ -24,7 +23,7 @@ Gaussian, Matern: 1d,2d,3d
 N and eps variation 
 
 Comparison plots:
-        Ground truth: Our method run to convergence
+    Ground truth: Our method run to convergence
 	Error metric: posterior mean at new targets compared to ground truth
 	Timing consideration: new targets/ O(N/10) targets/ time for posterior mean per target
                 T_precomp + t_targ;
@@ -33,16 +32,20 @@ Comparison plots:
 Tables for large N comparison :
      More detailed timing breakdown, fixed N, fixed eps, RAM, different timing considerations, error
 
+Big examples:
+* CO2 data
+* Heaton data
+* Randomly generated data in 3D
 
 For all algs:
 Memory used
 Precomp time -> solving linear system
 Per Target time -> time taken to compute posterior mean at all targets 
 Error target 
-Other params: CG iteration
+Other params: 
+  * CG iteration
+  * Error source
+  * source time
 
 Memorygraph
-
-Big examples:
-CO2 data
 
