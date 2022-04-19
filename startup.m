@@ -10,7 +10,6 @@ else                       % default & all others (phillip)
   addpath ~/nufft_gps/finufft/matlab;
 end
 
-
 % access all of local tree
 h = fileparts(mfilename('fullpath'));
 addpath(genpath(h))                        % gives access to all subdirs

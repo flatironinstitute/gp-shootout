@@ -19,28 +19,13 @@ Note the non-zero mean.
 
 
 
-Procedure to convert to CSV files
----------------------------------
+Procedure to convert to CSV, and from there MAT, files
+------------------------------------------------------
 
 Install R.
-From within R:
-
-> load("AllSatelliteTemps.RData")
-> load("SatelliteTemps.RData")
-> load("AllSimulatedTemps.RData")
-> load("SimulatedTemps.RData")
-
-> ls()
-[1] "all.sat.temps" "all.sim.data"  "sat.temps"     "sim.data"
-
-> write.csv(all.sat.temps,"AllSatelliteTemps.csv")
-> write.csv(sat.temps,"SatelliteTemps.csv")
-> write.csv(all.sim.data,"AllSimulatedTemps.csv")
-> write.csv(sim.data,"SimulatedTemps.csv")
-
-Total CSV files about 35 MB.
-
+Run make_Heaton_csv.R
+Creates total CSV files about 35 MB.
 The files "All" include training+test points. The files without "All" are just
 training points.
 
-Now please see MATLAB code processcsv.m for wrangling into sensible format.
+Then run MATLAB code make_Heaton_mat.m for rescaling and writing to MAT files.

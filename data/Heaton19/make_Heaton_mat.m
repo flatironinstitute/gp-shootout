@@ -1,10 +1,9 @@
 % script to examine and select from CSV files from Heaton et al. 2019
-% comparison 2D satellite data.
-% Rescales to fit in [-1,1]^2, fixes local aspect ratio, extracts test
+% comparison 2D satellite data, and write out to our MAT files.
+% Optionally rescales to [0,1]^2 and fixes aspect ratio, extracts test
 % targets and true values therein.
-% Run from this directory.
 % See README for how we extracted .csv files from .RData (R format) files.
-% Barnett 4/11/22
+% Barnett 4/11/22. rescaling switched off 4/19/22.
 %
 % Notes:
 % 1) it's clear that Heaton et al. used raw (LON,LAT) coords to construct
@@ -25,7 +24,10 @@
 
 clear; verb = 1;      % verbosity (0=no figs, 1=figs)
 
+% location of your clone of heatoncomparison repo...
 p = '/home/alex/numerics/nufft/GP/heatoncomparison/Data/';
+h = fileparts(mfilename('fullpath'));      % dir this script is in
+
 ar=readmatrix([p 'AllSatelliteTemps.csv'],'numheaderlines',1);   % "r" = real
 % cols: index longitude(deg) latitude(deg) alltemps traintemps.
 % alltemps are Nan where no meas. traintemps are Nan where instead a test pt
@@ -46,53 +48,62 @@ if verb>1, figure;  % show raw data in degree (long,lat) units...
   title(sprintf('s (LON,LAT): sim, N=%d',size(s,1)));
 end
 
-% project roughly to flat projection w/ correct aspect ratio...
-loncen = (max(ar(:,2))+min(ar(:,2)))/2;
-lonsc = (max(ar(:,2))-min(ar(:,2)))/2;
-latcen = (max(ar(:,3))+min(ar(:,3)))/2;
-latsc = (max(ar(:,3))-min(ar(:,3)))/2;
+rescale = false;               % false: leave original x coords & aspect ratio.
 correctaspect = false;         % Heaton uses false; we believe true is better
-if correctaspect
-  sth = cos(2*pi*latcen/360);      % "sin(theta)" metric factor (lon vs lat)
-else, sth = 1.0;
+
+lon0 = 0.0; lat0 = 0.0; lonsc = 1.0; latsc = 1.0; sc = 1.0; sth = 1.0; % default
+if rescale
+  lon0 = min(ar(:,2));             % get bounding box around the data points
+  lonsc = max(ar(:,2))-min(ar(:,2));
+  lat0 = min(ar(:,3));
+  latsc = max(ar(:,3))-min(ar(:,3));
+  % project roughly to flat projection w/ correct aspect ratio...
+  if correctaspect
+    latcen = lat0+latsc/2;           % latitude of center of box
+    sth = cos(2*pi*latcen/360);      % "sin(theta)" metric factor (lon vs lat)
+  end
+  sc = max(lonsc*sth,latsc);    % conversion from lat degrees so x in [0,1]^2
 end
-sc = max(lonsc*sth,latsc);    % conversion from lat degrees so x in [-1,1]^2
 lonfac = sth/sc;              % factor we multiplied LON by to get x(1,:)
 latfac = 1/sc;                % factor we multiplied LAT by to get x(2,:)
-xa(1,:) = (ar(:,2)'-loncen) * lonfac;    % all x-coords, rel to center
-xa(2,:) = (ar(:,3)'-latcen) * latfac;    %   " y
+xa(1,:) = (ar(:,2)'-lon0) * lonfac;    % all x-coords, possibly rescaled
+xa(2,:) = (ar(:,3)'-lat0) * latfac;    %   " y
 REkm = 6371;                     % typ radius of Earth, kilometer (1e-3 relerr)
 kmdeg = REkm*pi/180;             % km per latitude degree
-fprintf('LON*LAT box half-sizes %.3g*%.3g deg (%.3g*%.3g km)\n',lonsc,latsc,kmdeg*lonsc*sth,kmdeg*latsc)
-fprintf('pixel sizes in km: %.4g*%.4g (2nd only valid if correctaspect=true)\n',diff(xa(1,1:2))*sc*kmdeg, diff(xa(2,[501 1]))*sc*kmdeg)
+fprintf('LON*LAT box size %.3g*%.3g deg (%.3g*%.3g km)\n',lonsc,latsc,kmdeg*lonsc*sth,kmdeg*latsc)
+fprintf('pixel sizes in km: %.4g*%.4g (2nd only valid on actual Earth sphere if correctaspect=true)\n',diff(xa(1,1:2))*sc*kmdeg, diff(xa(2,[501 1]))*sc*kmdeg)
 if verb>1, figure; plot(xa(1,:),xa(2,:),'.'); title('all nodes xa'); end
 
 % select training and test targets in more sensible format... real satellite
 jtrain = find(~isnan(ar(:,4)));                    % "training" indices
 jtest = find(isnan(ar(:,4)) & ~isnan(ar(:,5)));   % test targets indices
 xtrg = xa(:,jtest);
-x = xa(:,jtrain);          % "x" our name for training pts
+x = xa(:,jtrain);         % "x" our name for training pts
 meas = ar(jtrain,5);      % satellite temperature data (Celcius)
 truetrg = ar(jtest,5);    % "
-save heaton19sat.mat x meas xtrg truetrg lonfac latfac
+save([h '/heaton19sat.mat'],'x','meas','xtrg','truetrg','lonfac','latfac');
 % simulated (but note simulation used kernel incorrectly isotropic in LON,LAT)
 jtrain = find(~isnan(as(:,4)));                    % "training" indices
 jtest = find(isnan(as(:,4)) & ~isnan(as(:,5)));   % test targets indices
 xtrg = xa(:,jtest);
-x = xa(:,jtrain);          % "x" our name for training pts
+x = xa(:,jtrain);         % "x" our name for training pts
 meas = as(jtrain,5);      % simulated temperature data (Celcius). Same x, xtrg
 truetrg = as(jtest,5);    % "
-save heaton19sim.mat x meas xtrg truetrg lonfac latfac
+save([h '/heaton19sim.mat'],'x','meas','xtrg','truetrg','lonfac','latfac');
 
 if verb, figure;  % show processed data
-  load heaton19sat
-  subplot(1,2,1); scatter(x(1,:),x(2,:),1,meas); 
-  hold on; scatter(xtrg(1,:),xtrg(2,:),1,truetrg); colorbar; axis equal tight
-  plot(xtrg(1,:),xtrg(2,:),'w.','markersize',1);
-  title(sprintf('processed: sat train, N=%d (Ntrg=%d)',numel(meas),numel(truetrg)));
-  load heaton19sim
-  subplot(1,2,2); scatter(x(1,:),x(2,:),1,meas); 
-  hold on; scatter(xtrg(1,:),xtrg(2,:),1,truetrg); colorbar; axis equal tight
-  plot(xtrg(1,:),xtrg(2,:),'w.','markersize',1);
-  title(sprintf('processed: sim train, N=%d (Ntrg=%d)',numel(meas),numel(truetrg)));
+  load([h '/heaton19sat.mat'])
+  subplot(2,2,1); scatter(x(1,:),x(2,:),1,meas); colorbar; axis equal tight;
+  v = axis; c = caxis;
+  title(sprintf('make\\_Heaton\\_mat: sat train N=%d',numel(meas)));
+  subplot(2,2,2); scatter(xtrg(1,:),xtrg(2,:),1,truetrg); axis(v); caxis(c);
+  colorbar; axis equal tight;
+  title(sprintf('make\\_Heaton\\_mat: sat test Ntrg=%d',numel(truetrg)));
+  load([h '/heaton19sim.mat'])
+  subplot(2,2,3); scatter(x(1,:),x(2,:),1,meas); colorbar; axis equal tight;
+  v = axis; c = caxis;
+  title(sprintf('make\\_Heaton\\_mat: sim train N=%d',numel(meas)));
+  subplot(2,2,4); scatter(xtrg(1,:),xtrg(2,:),1,truetrg); axis(v); caxis(c);
+  colorbar; axis equal tight;
+  title(sprintf('make\\_Heaton\\_mat: sim test Ntrg=%d',numel(truetrg)));
 end
