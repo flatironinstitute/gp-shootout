@@ -17,6 +17,9 @@ function [x, meas, dummy, xtrg, truetrg] = get_Heatondata(type)
 %  [3rd output unused]
 %  xtrg - 2*p array of coords of N target (test) points in R^2.
 %  truetrg - length-p vector of "ground-truth" temperatures at test points.
+%
+% Without input or output arguments, does self-test.
+if nargin==0 && nargout==0, test_get_Heatondata; return; end
 
 if nargin==0, type='sim'; warning('using sim Heaton data by default'); end
 h = fileparts(mfilename('fullpath'));      % dir this script is in
@@ -28,3 +31,12 @@ else
   error('unknown type!');
 end
 dummy = [];
+
+%%%%%%%%
+function test_get_Heatondata         % only visual for now (not unit test)
+[x, meas, ~, xtrg, truetrg] = get_Heatondata('sat');
+figure;
+subplot(2,1,1); geoscatter(x(2,:), x(1,:), 1, meas); % geoscat expects LAT, LON
+cb = colorbar; c = caxis; title('Heaton train');
+subplot(2,1,2); geoscatter(xtrg(2,:), xtrg(1,:), 1, truetrg);    % "
+caxis(c); cb = colorbar; title('Heaton test');

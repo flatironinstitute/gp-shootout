@@ -7,6 +7,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ker.khat), conditioned on the y-values meas at the set of points x, in
 %  spatial dimension 1,2 or 3. The method is efficient and accurate only when
 %  khat decays rapidly in Fourier space. FINUFFT library is a prerequisite.
+%  Coordinates x and xtrg may be anywhere in R^2.
 %
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -34,8 +35,9 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %
 % If called without arguments, does a self-test.
 
-% Notes: 1) this code is a wrapper to separate dimension functions
-%   2) I changed the ker format from Philip
+% Notes:
+%  1) this code is a wrapper to separate dimension functions
+%  2) Rescaling is done.
 % Todo:
 % *** figure how to switch off x as self-targs, since may make too slow?
 if nargin==0, test_EFGP; return; end
@@ -79,10 +81,10 @@ for dim = 1:3   % ..........
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
-  [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
+  [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
   ker = SE_ker(dim,l);
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
-  % run o(n^3) naive gp regression
+  % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
   fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');

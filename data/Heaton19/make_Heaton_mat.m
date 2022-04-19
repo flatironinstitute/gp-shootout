@@ -1,7 +1,7 @@
 % script to examine and select from CSV files from Heaton et al. 2019
 % comparison 2D satellite data, and write out to our MAT files.
-% Optionally rescales to [0,1]^2 and fixes aspect ratio, extracts test
-% targets and true values therein.
+% Optionally rescales to [0,1]^2 and fixes aspect ratio (see code).
+% Extracts test targets and true values therein.
 % See README for how we extracted .csv files from .RData (R format) files.
 % Barnett 4/11/22. rescaling switched off 4/19/22.
 %
@@ -12,7 +12,7 @@
 %    However this is *not* locally isotropic on the Earth surface!
 %    They omitted the sin(theta) factor, where theta = (90-LAT)*pi/180 is
 %    radians from the north pole.
-%    How could this simple thing be missed? It is intentional?
+%    It is intentional? For consistency, we reluctantly follow suit.
 % 2) LST (land surface temperatures) are in deg Celcius, see:
 %   https://ladsweb.modaps.eosdis.nasa.gov/filespec/MODIS/6/MOD11_L2
 %   showing scale_factor = 0.02
