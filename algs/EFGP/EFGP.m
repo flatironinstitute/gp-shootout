@@ -82,7 +82,7 @@ for dim = 1:3   % ..........
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
-  % x = x + 2.101;   % test translation
+  %x = x + 21;   % test translation
   ker = SE_ker(dim,l);
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression

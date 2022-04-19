@@ -11,9 +11,9 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 % y      - N x 1 array of (noisy) observations
 % sigmasq - residual variance for GP regression
 % ker    - struct with ker.k is the covariance kernel and ker.khat is its
-% Fourier transform
+%          Fourier transform
 % eps    - truncate covariance kernel in time and Fourier domains when values
-% of functions reach eps
+%          of functions reach eps
 % xsol   - locations at which to evaluate posterior mean
 %
 % Outputs:
@@ -25,44 +25,42 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 %
 % To test this routine see: EFGP
   
-  k = ker.k; khat = ker.khat;    % get functions, new kernel format
+  k = ker.k; khat = ker.khat;  % get functions, new kernel format
   N = numel(y);
 
-    tic_precomp = tic;
-    tmax = 1;          % *** length of domain containing x & xtrg; make general
-    xis = get_xis(ker, eps, tmax);
-    h = xis(2) - xis(1);
-    m = numel(xis);
+  tic_precomp = tic;
+  x0 = min(x); x1 = max(x);
+  xcen = (x1+x0)/2;
+  x = x - xcen; xsol = xsol - xcen;          % center all coords for NUFFTs
+  L = x1-x0;                   % approx domain length *** could check xtrg too?
+  [xis h m] = get_xis(ker, eps, L);
 
-    % set scaling of basis functions
-    ws = sqrt(khat(xis)' * h);
+  % weight scaling of Fourier basis functions
+  ws = sqrt(khat(xis)' * h);
     
     % construct first row and column of toeplitz matrix for fast apply
-    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
-    c = ones(N, 1);
-    XtXrow = finufft1d1(x*2*pi*h, c, +1, tol, 2*m-1)'; 
+    nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant
+    c = complex(ones(N, 1));      % unit weights
+    XtXrow = finufft1d1((2*pi*h)*x, c, +1, nuffttol, 2*m-1)'; 
     Gf = fftn(XtXrow.');
     
-    % construct rhs with fft
+    % construct rhs = X^*y, with NUFFT
     isign = -1;
-    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
-    rhs = finufft1d1(2*pi*x*h, y, isign, tol, m);
-    rhs = ws .* rhs;
-    
+    rhs = finufft1d1((2*pi*h)*x, y, isign, nuffttol, m);
+    rhs = ws .* rhs;                         % col vecs
     t_precomp = toc(tic_precomp);
     
-    % solve linear system with conjugate gradient
+    % solve linear system (X^*X + sigma^2)beta = rhs with conjugate gradient
     Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigmasq .* a; 
     
     tic_cg = tic; 
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, m);
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, m);  % solve beta vec
     t_cg = toc(tic_cg);
     
     % tabulate solution using fft
-    tol = eps / 10; % nufft is fast, so just make sure we don't incur errors
     tmpvec = ws .* beta;
     tic_post = tic;
-    yhat = finufft1d2(2*pi*h*xsol, +1, tol, tmpvec);
+    yhat = finufft1d2((2*pi*h)*xsol, +1, nuffttol, tmpvec);
     t_post = toc(tic_post);
 
     time_info = [t_precomp, t_cg, t_post];
@@ -74,9 +72,9 @@ end
 
 
 function [v2] = Afun2(Gf, a)
-% this function is used for performaing a fast matrix multiply 
-% in conjugate gradient. it takes an fft of a and multiplies 
-% in frequency domain by Gf and then converts back to time/spatial domain
+% this function performs a fast multiply by Toeplitz matrix, needed for
+% conjugate gradient. it takes an fft of a and multiplies 
+% in "coeff frequency" domain by Gf and then converts back to "coeff" domain.
     m = numel(a);
     af = fftn(a, size(Gf));
     vft = af .* Gf;
