@@ -69,11 +69,12 @@ ytrg.mean = yhat(N+1:end);
 %%%%%%%%%%
 function test_EFGP   % basic tests for now, duplicates naive_gp *** to unify
 N = 3e3;        % problem size (small, matching naive, for now)
-l = 0.1;        % SE kernel scale
+l = 0.1;        % SE kernel scale rel to domain [0,1]^dim, ie hardness of prob
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 opts.tol = 1e-8;
+L = 50.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 
 for dim = 1:3   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
@@ -82,8 +83,8 @@ for dim = 1:3   % ..........
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
-  %x = x + 21;   % test translation
-  ker = SE_ker(dim,l);
+  x = L*x + rand(dim,1)*shift;
+  ker = SE_ker(dim,L*l);
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);

@@ -21,7 +21,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 % xis  - Fourier freqs used (not really for the user)
 % yhat - posterior means at xsol ordinates   <- the only user output
 % iter - diagnostics from CG
-% ts   - diagnostic list of timings
+% time_info  - diagnostic list of timings
 %
 % To test this routine see: EFGP
   
@@ -30,23 +30,25 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 
   tic_precomp = tic;
   x0 = min(x); x1 = max(x);
-  xcen = (x1+x0)/2;
-  x = x - xcen; xsol = xsol - xcen;          % center all coords for NUFFTs
   L = x1-x0;                   % approx domain length *** could check xtrg too?
   [xis h m] = get_xis(ker, eps, L);
-
+  % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
+  xcen = (x1+x0)/2;
+  tphx = 2*pi*h*(x - xcen);
+  tphxsol = 2*pi*h*(xsol - xcen);
+  
   % weight scaling of Fourier basis functions
   ws = sqrt(khat(xis)' * h);
     
     % construct first row and column of toeplitz matrix for fast apply
     nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant
     c = complex(ones(N, 1));      % unit weights
-    XtXrow = finufft1d1((2*pi*h)*x, c, +1, nuffttol, 2*m-1)'; 
+    XtXrow = finufft1d1(tphx, c, +1, nuffttol, 2*m-1)'; 
     Gf = fftn(XtXrow.');
     
     % construct rhs = X^*y, with NUFFT
     isign = -1;
-    rhs = finufft1d1((2*pi*h)*x, y, isign, nuffttol, m);
+    rhs = finufft1d1(tphx, y, isign, nuffttol, m);
     rhs = ws .* rhs;                         % col vecs
     t_precomp = toc(tic_precomp);
     
@@ -60,7 +62,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
     % tabulate solution using fft
     tmpvec = ws .* beta;
     tic_post = tic;
-    yhat = finufft1d2((2*pi*h)*xsol, +1, nuffttol, tmpvec);
+    yhat = finufft1d2(tphxsol, +1, nuffttol, tmpvec);
     t_post = toc(tic_post);
 
     time_info = [t_precomp, t_cg, t_post];

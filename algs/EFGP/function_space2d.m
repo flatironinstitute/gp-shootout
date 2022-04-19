@@ -1,55 +1,56 @@
-function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
+function [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ker, eps, xsol)
 % FUNCTION_SPACE2D   equispaced Fourier NUFFT-based GP regression in 2D
 %
-% [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, ker, eps, xsols)
+% [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ker, eps, xsol)
 % performs Gaussian process regression in 2d using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
 % performing regression. 
 %
 % Inputs:
-% xs - N x 2 array of location of observations
-% y - N x 1 array of (noisy) observations
+% x -    N x 2 array of location of observations
+% y -     N x 1 array of (noisy) observations
 % sigmasq - residual variance for GP regression
-% ker - struct with ker.k is the covariance kernel and ker.khat is its
-% Fourier transform
-% eps - truncate covariance kernel in time and Fourier domains when values
-% of functions reach eps
-% xsol - locations at which to evaluate posterior mean
+% ker -   struct with ker.k is the covariance kernel and ker.khat is its
+%         Fourier transform
+% eps -   truncate covariance kernel in time and Fourier domains when values
+%         of functions reach eps
+% xsol -  n*2 coords of points at which to evaluate posterior mean
 %
 % Outputs:
 % beta - vector of Fourier basis weights (not really for the user)
-% xis  - Fourier freqs used (not really for the user)
+% xis  - 1D grid of Fourier freqs used (not really for the user)
 % yhat - posterior means at xsol ordinates   <- the only user output
 % iter - diagnostics from CG
 % time_info   - diagnostic list of timings
 %
-% For test see EFGP 
+% For test see EFGP
 
-% get kernel functions
-  k = ker.k; khat = ker.khat;
+% Note: no attempt to exploit rectangular box done; enclosing square used for L
 
-    % support of functionin time domain
-    tic_precomp = tic;
-    tmax = 1;
-    xis = get_xis(ker, eps, tmax);
-    h = xis(2) - xis(1);
-    m = numel(xis);
-    [xis_xx, xis_yy] = meshgrid(xis);
-
-    const = h;
-    rs = sqrt(xis_xx.^2 + xis_yy.^2);
-    ws = sqrt(khat(rs)) * const;
-    
-    % precomputation for fast apply of X*X
-    Gf = getGf(eps, xs, xis);
+  tic_precomp = tic;
+  x0 = min(x); x1 = max(x);   % both row 2-vectors
+  L = max(x1-x0);    % worst-axis domain length *** could check xsol too?
+  [xis h m] = get_xis(ker, eps, L);
+  [xis_xx, xis_yy] = ndgrid(xis, xis);    % assumes isotropic
+  % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
+  xcen = (x1+x0)/2;                    % row vec
+  tphx = 2*pi*h*(x - xcen);            % note broadcast over rows
+  tphxsol = 2*pi*h*(xsol - xcen);      % "
+  
+  % weights of Fourier basis funcs
+  rs = sqrt(xis_xx.^2 + xis_yy.^2);
+  dim = 2; ws = sqrt(ker.khat(rs) * h^dim);
+  
+  % precomputation for fast apply of X*X
+  nuffttol = eps/10;
+  Gf = getGf(nuffttol, tphx, m);
     
     % conjugate gradient
     ws_flat = reshape(ws, m^2, 1);
-    Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a) + sigmasq .* a;
+    Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a, m) + sigmasq .* a;
     
     isign = -1;
-    tol = eps / 10;
-    rhs = finufft2d1(2*pi*xs(:,1)*h, 2*pi*xs(:,2)*h, y, isign, tol, m, m);
+    rhs = finufft2d1(tphx(:,1), tphx(:,2), y, isign, nuffttol, m, m);
     rhs = reshape(rhs.' .* ws, [], 1); 
     
     t_precomp = toc(tic_precomp);
@@ -63,8 +64,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
     tmpvec = ws .* reshape(beta, [m, m]);
     tmpvec = tmpvec.';
     isign = +1;
-    tol = eps / 10;
-    yhat = finufft2d2(2*pi*h * xsols(:,1), 2*pi*h * xsols(:,2),isign,tol,tmpvec);
+    yhat = finufft2d2(tphxsol(:,1), tphxsol(:,2),isign,nuffttol,tmpvec);
     t_post = toc(tic_post);
 
     % package timings
@@ -73,35 +73,25 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(xs, y, sigmasq, k
 
     % convert to real
     yhat = real(yhat);
-
 end
 
 
-function [Gf] = getGf(eps, xs, z)
-    N = length(xs);
-    m = length(z);
-    % determine all the differences where kernel is to be evaluated...
-    % ...for both x and y directions 
-    h = z(2) - z(1);
-
-    % parameters for fft
-    c = 0i + ones(N, 1);
+function [Gf] = getGf(nuffttol, tphx, m)
+% vector to multiply by on the FFT side that convolves with Toeplitz row.
+    N = length(tphx);
+    c = complex(ones(N, 1));         % unit strengths
     isign = -1;
-    tol = eps/10;
-    
     o.modeord = 1;
-    Gf = finufft2d1(2*pi*xs(:,1)*h,2*pi*xs(:,2)*h,c,isign,tol,2*m-1, 2*m-1, o);
+    Gf = finufft2d1(tphx(:,1), tphx(:,2), c, isign, nuffttol, 2*m-1, 2*m-1, o);
     Gf = fftn(Gf.');
 end
 
 
-function [v] = apply_xtx(Gf, b)
-    n = sqrt(length(b));
+function [v] = apply_xtx(Gf, b, n)
     b = reshape(b, n, n);
     vft = fftn(b,size(Gf));
     vft = vft.*Gf;
     vft = ifftn(vft);
     v = vft(1:n,1:n);
-    v = reshape(v,[],1);
+    v = v(:);
 end
-
