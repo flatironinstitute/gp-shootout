@@ -1,4 +1,4 @@
-function [y, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
+function [y, dummy, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
 % [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -29,10 +29,9 @@ function [y, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     xis - Fourier xi nodes use
-%     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for various steps
-%     iter - # iterations needed
+%     cpu_time - run time in seconds
+%     RAM - memory usage in bytes
+%     proxy - list of proxy pts used (for unit scale box)
 %
 % If called without arguments, does a self-test.
 
@@ -55,8 +54,6 @@ if ~isfield(opts,'p'), opts.p = 16; end
 
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
-
-
 verb = 1;
 
 if(dim == 1)
@@ -65,15 +62,17 @@ elseif(dim == 2)
     theta_proxy = (1:opts.p)*2*pi/opts.p;
     proxy_ = [cos(theta_proxy); sin(theta_proxy)];
     proxy = [];
-    for r = linspace(1.5,2.5,opts.p)
+    for r = linspace(1.5,2.5,opts.p)        % mysterious shells
      proxy = [proxy r*proxy_];
     end
+else
+  error('dim>2 not implemented!');
 end
 
 clear theta_proxy proxy_;
 
-Afun = @(i,j)Afunflam(i,j,x,ker,sigmasq);
-pxyfun = @(x,slf,nbr,l,ctr)pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
+Afun = @(i,j) Afunflam(i,j,x,ker,sigmasq);
+pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 
 % verbose mode?
@@ -85,13 +84,14 @@ end
 
 tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
-alpha = rskelf_sv(F,meas);
-y.mean = meas - alpha*sigmasq;
+alpha = rskelf_sv(F,meas);         % soln vec via solve the lin sys
+y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
+
 info.cpu_time = toc(tt1);
-
-
-    
-
+info.proxy = proxy;
+w = whos('F');
+info.RAM = w.bytes;
+dummy = [];
 
 
 %%%%%%%%%%
@@ -111,11 +111,11 @@ for dim = 1:2   % ..........
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   ker = SE_ker(dim,l);
-  [y, ~] = FLAMGP(x, meas, sigma^2, ker, [], opts);
-  % run o(n^3) naive gp regression
+  [y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);
+  % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
-  %fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-  %fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
+  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
