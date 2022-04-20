@@ -1,4 +1,4 @@
-function [y, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
+function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
 % [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -18,7 +18,7 @@ function [y, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  xtrg - [optional, or may be empty] targets points, d*n real array for d dims.
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
-%         tol - desired tolerance, eg 1e-6
+%         tol - desired tolerance, default: 1e-6
 %         occ - max number of points per box, (default 64)
 %         p - number of proxy points;
 %         v - verbose;
@@ -89,6 +89,15 @@ alpha = rskelf_sv(F,meas);
 y.mean = meas - alpha*sigmasq;
 info.cpu_time = toc(tt1);
 
+% posterior mean at targets
+ytrg = [];
+if do_trg
+  [~,ntrg] = size(xtrg);        % # targs
+  tic;
+  B = densekermat(ker.k,xtrg,x);   %  n-by-N
+  ytrg.mean = B * alpha;    % do the GP sum, naively
+  info.cputime(3) = toc;
+end
 
     
 
@@ -111,7 +120,7 @@ for dim = 1:2   % ..........
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   ker = SE_ker(dim,l);
-  [y, ~] = FLAMGP(x, meas, sigma^2, ker, [], opts);
+  [y, ~, ~] = FLAMGP(x, meas, sigma^2, ker, [], opts);
   % run o(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   %fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
