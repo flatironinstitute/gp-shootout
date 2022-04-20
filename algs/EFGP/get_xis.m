@@ -7,10 +7,7 @@ function [xis] = get_xis(dim, ker, eps, tmax)
     % new handles
     k = ker.k;
     khat = ker.khat;
-    
-    %%%k = @(r) r^(dim - 1) * ker.k(r);
     %%%khat = @(r) ker.khat(r) / ker.khat(0);
-    %%%khat = @(r) abs(r^(dim-1)) * khat(r) / ker.khat(0);
     khat = @(r) abs(r^(dim-1)) * khat(r) / khat(0);
 
     % find support of function in time domain

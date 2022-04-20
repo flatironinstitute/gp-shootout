@@ -1,6 +1,6 @@
 % script to test all kernel functions have roughly the right Fourier transform,
 % using equispaced quadrature (PTR) Kronecker product over dims.
-% For now, only SE kernel and Matern-1/2.
+% For now, only SE kernel and Matern-1/2, Matern-3/2, Matern-5/2.
 % *** to do: more formal unit tests
 % Barnett 4/5/22 started.
 clear; disp('test_kers: user should visually check that the below errors are not O(1). This checks that prefactors are not O(1) wrong...');
