@@ -43,10 +43,10 @@ to do: minimally complete example...
 
 ### To do
 
+* insert switch from EFGP to SSGP w/ same xi quad nodes.
+* explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
-* covar output to `naive_gp`?
-* datasets -> `data/*`
-* other methods -> `algs/*` (Python via system calls from matlab?)
+* understand empirical error breakdown as sigma->0 at large N
 
 
 ### Done (CHANGELOG)
@@ -58,3 +58,8 @@ to do: minimally complete example...
 * Heaton et al. 2019 comparison datasets (two of), 2D, N=1e5
 * posterior variances at target points for gp_naive
 * testing routines for comparing methods to gp_naive for small problems
+* rationalized dims 1,2,3 EFGP, handle arb shifted & scaled x data
+* covar output to `naive_gp`?
+* datasets -> `data/*`
+* other methods -> `algs/*` (Python via system calls from matlab)
+

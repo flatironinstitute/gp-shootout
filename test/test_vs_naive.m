@@ -1,5 +1,5 @@
 % this script compares the accuracy of several algorithms for 
-% Gaussian process regression against the naive, o(n^3) algorithm.
+% Gaussian process regression against the naive, O(N^3) algorithm.
 % specifcally, this script compares the posterior mean at the inputted data
 % points using several fast methods and compares that to the same values
 % obtained using a slow, accurate method. 
@@ -28,7 +28,7 @@ for dim = 1:3
   [y1, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   fprintf('EFGP   rms vs naive %.3g, time: %.3g\n', rms(y1.mean-ytrue.mean), info.cpu_time(end));
 
-  % SKI w/ default gridsize
+  % SKI w/ default gridsize.    *** does it need funky x=0,1 pts present?
   %%%opts.grid_size = 1000;
   [y2, ~, info] = SKI(x, meas, sigma^2, ker, [], opts);
   fprintf('SKI    rms vs naive %.3g, time: %.3g\n', rms(y2.mean-ytrue.mean), info.cpu_time(end));

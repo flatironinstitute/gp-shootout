@@ -7,7 +7,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ker.khat), conditioned on the y-values meas at the set of points x, in
 %  spatial dimension 1,2 or 3. The method is efficient and accurate only when
 %  khat decays rapidly in Fourier space. FINUFFT library is a prerequisite.
-%  Coordinates x and xtrg may be anywhere in R^2.
+%  Coordinates x and xtrg may be anywhere in R^2 (under the hood recentering
+%  is done).
 %
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -27,19 +28,20 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     xis - Fourier xi nodes use
+%     xis - Fourier xi nodes used
+%     h - their spacing
+%     ximax - the max xi coord of nodes
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for (precomputation, conjugate
+%     cpu_time - list of times in seconds for (precomputation, conjugate
 %     gradient, evaluation of posterior means)
 %     iter - # iterations needed
 %
 % If called without arguments, does a self-test.
 
 % Notes:
-%  1) this code is a wrapper to separate dimension functions
-%  2) Rescaling is done.
-% Todo:
-% *** figure how to switch off x as self-targs, since may make too slow?
+%  1) this code is a wrapper to separate dimension functions.
+%  2) Fourier quadrature convergence param logic is in get_xis.m
+
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
@@ -61,6 +63,7 @@ elseif dim==3
 else
   error('dim must be 1,2, or 3!');
 end
+info.h = info.xis(2)-info.xis(1); info.ximax = max(info.xis);   % maybe help
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);
@@ -69,11 +72,12 @@ ytrg.mean = yhat(N+1:end);
 %%%%%%%%%%
 function test_EFGP   % basic tests for now, duplicates naive_gp *** to unify
 N = 3e3;        % problem size (small, matching naive, for now)
-l = 0.1;        % SE kernel scale
+l = 0.1;        % SE kernel scale rel to domain [0,1]^dim, ie hardness of prob
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 opts.tol = 1e-8;
+L = 50.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 
 for dim = 1:3   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
@@ -82,7 +86,8 @@ for dim = 1:3   % ..........
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
-  ker = SE_ker(dim,l);
+  x = L*x + (2*rand(dim,1)-1)*shift;                           % scale & shift
+  ker = SE_ker(dim,L*l);             % note L also scales kernel length here
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
@@ -94,20 +99,21 @@ for dim = 1:3   % ..........
   % make sure we're computing gp regression accurately
   fprintf('        rms efgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
 
-  % show pics
-  figure;
-  if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
-  elseif dim==2
-    subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
-    caxis([-1 1]); axis equal tight
-    subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
-    caxis([-1 1]); axis equal tight
-  elseif dim==3
-    subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
-    caxis([-1 1]); axis equal tight
-    subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
-    caxis([-1 1]); axis equal tight
+  if 0       % show pics
+    figure;
+    if dim==1, plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
+    elseif dim==2
+      subplot(1,2,1); scatter(x(1,:),x(2,:),[],meas,'filled');
+      caxis([-1 1]); axis equal tight
+      subplot(1,2,2); scatter(x(1,:),x(2,:),[],y.mean,'filled');
+      caxis([-1 1]); axis equal tight
+    elseif dim==3
+      subplot(1,2,1); scatter3(x(1,:),x(2,:),x(3,:),[],meas,'filled');
+      caxis([-1 1]); axis equal tight
+      subplot(1,2,2); scatter3(x(1,:),x(2,:),x(3,:),[],y.mean,'filled');
+      caxis([-1 1]); axis equal tight
+    end
+    title(sprintf('EFGP test %dd',dim)); drawnow;
   end
-  title(sprintf('EFGP test %dd',dim)); drawnow;
-
+  
 end             % ..........
