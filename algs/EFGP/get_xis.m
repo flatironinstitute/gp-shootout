@@ -30,17 +30,17 @@ function [xis, h, m] = get_xis(ker, eps, L)
   dim = ker.dim;              % spatial dimension
   
   % spatial radial ker func
-  k = ker.k;
+  k = ker.k;                  % care about absolute vals of kernel
   Ltime = getL(eps, k);       % find eps-support
   h = 1/(L+Ltime);            % xi node spacing so nearest aliased tail <= eps
-  % (NB Nyquist was hnyq = 1/(2*Ltime), more pessimistic)
+  % (NB Nyquist was hnyq = 1/(2*max(L,Ltime)), more pessimistic)
   
   % Fourier radial ker func
   khat = ker.khat;
   %%%khat = @(r) ker.khat(r) / ker.khat(0);         % some old version w/o polar
   khat = @(r) abs(r^(dim-1)) * khat(r) / khat(0);   % polar factor & rel to 0
   Lfreq = getL(eps, khat);    % find eps-support
-    
+  
   hm = ceil(Lfreq/h);         % half number of nodes to cover [-Lfreq,Lfreq]
   xis = (-hm:hm)*h;           % use exactly h, so may have bit of spillover
   m = numel(xis);

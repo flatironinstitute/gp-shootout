@@ -30,7 +30,9 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ke
   tic_precomp = tic;
   x0 = min(x); x1 = max(x);   % both row 2-vectors
   L = max(x1-x0);    % worst-axis domain length *** could check xsol too?
-  [xis h m] = get_xis(ker, eps, L);
+  N = size(x,1);
+  quadtol = eps;  % * min(1,1e2*sigmasq/sqrt(N))   % *** in devel; 1e-16 conv
+  [xis h m] = get_xis(ker, quadtol, L);
   [xis_xx, xis_yy] = ndgrid(xis, xis);    % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec
@@ -42,7 +44,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ke
   dim = 2; ws = sqrt(ker.khat(rs) * h^dim);
   
   % precomputation for fast apply of X*X
-  nuffttol = eps/10;
+  nuffttol = eps/10;     % 1e-14 to check conv
   Gf = getGf(nuffttol, tphx, m);
     
   % conjugate gradient
@@ -56,7 +58,8 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ke
 
     % solve linear system
     tic_cg = tic;
-    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,eps,m^2);
+    cgtol = eps;         % smaller doesn't help for ill-cond case
+    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,cgtol,m^2);
     t_cg = toc(tic_cg);
     
     % evaluate posterior mean 

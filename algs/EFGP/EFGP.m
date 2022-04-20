@@ -28,7 +28,9 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     xis - Fourier xi nodes use
+%     xis - Fourier xi nodes used
+%     h - their spacing
+%     ximax - the max xi coord of nodes
 %     beta - m*1 vector of weight-space (Fourier basis) weights
 %     cpu_time - list of times in seconds for (precomputation, conjugate
 %     gradient, evaluation of posterior means)
@@ -38,9 +40,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 
 % Notes:
 %  1) this code is a wrapper to separate dimension functions.
-%  2) For Fourier quadrature convergence param logic see get_xis.m
-% Todo:
-% *** figure how to switch off x as self-targs, since may make too slow?
+%  2) Fourier quadrature convergence param logic is in get_xis.m
+
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
@@ -62,6 +63,7 @@ elseif dim==3
 else
   error('dim must be 1,2, or 3!');
 end
+info.h = info.xis(2)-info.xis(1); info.ximax = max(info.xis);   % maybe help
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);

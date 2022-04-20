@@ -77,7 +77,7 @@ if do_var
 end
 
 %%%%%%%%%%
-function test_naive_gp   % basic tests for now
+function test_naive_gp   % basic tests for now, eg doesn't test covar
 N = 3e1;        % problem size
 l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
