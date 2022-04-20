@@ -9,7 +9,7 @@ clear; verb = 1;
 % kernel params (Heaton claim to have fitted) to give as in line 110 of:
 %https://github.com/finnlindgren/heatoncomparison/blob/master/Code/FormatData/FormatData.R
 mu = 44.49105;      % prior non-zero mean of GP (const in space, by why not try linear, since obvious SW-increasing trend?)
-sigma = 0.05;       % in degree C units; seems too small given Wan's MODIS doc
+sigma = 1;       % in degree C units; 0.05 too small given Wan's MODIS doc
 var = 16.40771;     % overall prior variance = covar kernel C(0)
 l = 1/0.75;   % kernel lengthscale in "degree" units; ignore wrong LON scale :(
 dim = 2; nu = 1/2;
