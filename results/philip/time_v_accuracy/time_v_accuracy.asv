@@ -1,0 +1,68 @@
+% accuracy vs time for for fixed N
+
+%%%%% 1D %%%%%
+% data
+N = 1e5;
+f = @(x) cos(6*2*pi*x) / 2;
+sigmatrue = 0.5;
+dim = 1;
+[x, meas, truemeas] = get_randdata(dim, N, f, sigmatrue);
+
+% targets
+ntrgs = 100;
+xtrgs = linspace(0, 1, ntrgs);
+
+% kernel
+sigmasq = sigmatrue^2;
+l = 0.1;
+dim = 1;
+ker = SE_ker(dim,l);
+
+% get accurate solution
+opts.tol = 1e-11;
+[y, ytrg_true, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
+opts.tol = 1e-12;
+[y, ytrg_true2, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
+fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true2.mean)));
+%%%scatter(x, meas); hold on; plot(xtrgs, ytrg_true.mean); hold off
+
+
+% EFGP
+nns = 6;
+ts = zeros(nns, 1);
+linf_errs = zeros(nns, 1);
+rms_errs = zeros(nns, 1);
+for i=1:nns
+    opts.tol = 1e-2 * 10^(-i);
+    [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
+    % L-inf   
+    dd = rms(ytrg.mean - ytrg_true.mean);
+    ts(i) = info.cpu_time(end);
+    rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
+    linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
+end
+
+efgp_1d.ts = ts;
+efgp_1d.rms_errs = rms_errs;
+efgp_1d.linf_errs = linf_errs;
+save('efgp_1d.mat','efgp_1d');
+
+
+% SKI
+ts = zeros(nns, 1);
+linf_errs = zeros(nns, 1);
+rms_errs = zeros(nns, 1);
+for i=1:nns
+    opts.tol = 1e-2 * 10^(-i);
+    [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrgs, opts);
+    % L-inf   
+    dd = rms(ytrg.mean - ytrg_true.mean);
+    ts(i) = info.cpu_time(end);
+    rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
+    linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
+end
+
+opts_ski.grid_s
+    [y2, ytrg2, info2] = SKI(x, meas, sigmasq, ker, xtrg, opts);   
+
+
