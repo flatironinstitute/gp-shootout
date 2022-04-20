@@ -1,4 +1,4 @@
-% driver script for an experiment
+% driver script for an experiment.
 % (copied from self-test of EFGP)
 clear; verb = 1;
 
@@ -14,14 +14,14 @@ wavevec = freqdata*unitvec;    % col vec
 f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
 [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
 ker = SE_ker(dim,l);
-%ker = Matern_ker(dim,3/2,l);
+%ker = Matern_ker(dim,3/2,l);   % harder for EFGP
 
-fprintf('\ntest EFGP, N=%d, sigma=%.3g, tol=%.3g, dim=%d...\n',N,sigma,opts.tol,dim)
+fprintf('\ntest N=%d, sigma=%.3g, tol=%.3g, dim=%d...\n',N,sigma,opts.tol,dim)
 [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);     % regress
-fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
+fprintf('EFGP %d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
 
-[y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);     % 1 min for N=1e6
-fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
+%[y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);     % 1 min for N=1e6
+%fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
 
 fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
 fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
@@ -33,5 +33,5 @@ if verb, figure; siz = 1.0; Np = min(N,1e5);  % max pts to plot
   caxis([-1 1]); axis equal tight
   subplot(1,2,2); scatter(x(1,1:Np),x(2,1:Np),siz*ones(Np,1),y.mean(1:Np),'filled');
   caxis([-1 1]); axis equal tight
-  title(sprintf('expt: EFGP %dd N=%d',dim,N));
+  title(sprintf('expt: %dd N=%d',dim,N));
 end
