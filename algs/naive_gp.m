@@ -30,7 +30,7 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 %     mean - posterior mean vector, n*1, computed by book formula
 %     var - posterior variances, n. [optional] ***todo: posterior covariance
 %  info - diagnostic struct containing fields:
-%     cputime - list of times in seconds for fill, solve + y eval, trg eval, etc.
+%     cpu_time - list of times in seconds for fill, solve+y eval, trg eval, etc
 %
 % If called without arguments, does a self-test
 if nargin==0, test_naive_gp; return; end
@@ -41,14 +41,14 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 if N>1e4, warning('N getting too big for naive method!'); end
 
 tic; K = densekermat(ker.k,x);
-info.cputime(1) = toc;
+info.cpu_time(1) = toc;
 
 tic;
 meas = meas(:);
 alpha = (K + sigmasq*eye(N)) \ meas;       % dense solve, probably
 y.mean = meas - sigmasq*alpha;             % magic stable cheap formula
 y.meanbook = K*alpha;                      % the book formula, slow, unstable
-info.cputime(2) = toc;
+info.cpu_time(2) = toc;
 
 ytrg = [];
 if do_trg
@@ -56,7 +56,7 @@ if do_trg
   tic;
   B = densekermat(ker.k,xtrg,x);   %  n-by-N
   ytrg.mean = B * alpha;    % do the GP sum, naively
-  info.cputime(3) = toc;
+  info.cpu_time(3) = toc;
 end
 
 % posterior variances at data points
@@ -96,7 +96,7 @@ for dim = 2:2   % ..........
   xtrg = equispaced_grid(dim, ntrgs);
   opts.getvar = true;
   [y, ytrg, info] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
-  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
   fprintf('y.mean: rms resid of lin sys   %.3g\n', rms(y.mean-y.meanbook))
   fprintf('        rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...

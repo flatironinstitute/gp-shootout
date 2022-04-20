@@ -7,7 +7,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ker.khat), conditioned on the y-values meas at the set of points x, in
 %  spatial dimension 1,2 or 3. The method is efficient and accurate only when
 %  khat decays rapidly in Fourier space. FINUFFT library is a prerequisite.
-%  Coordinates x and xtrg may be anywhere in R^2.
+%  Coordinates x and xtrg may be anywhere in R^2 (under the hood recentering
+%  is done).
 %
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -29,15 +30,15 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes use
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for (precomputation, conjugate
+%     cpu_time - list of times in seconds for (precomputation, conjugate
 %     gradient, evaluation of posterior means)
 %     iter - # iterations needed
 %
 % If called without arguments, does a self-test.
 
 % Notes:
-%  1) this code is a wrapper to separate dimension functions
-%  2) Rescaling is done.
+%  1) this code is a wrapper to separate dimension functions.
+%  2) For Fourier quadrature convergence param logic see get_xis.m
 % Todo:
 % *** figure how to switch off x as self-targs, since may make too slow?
 if nargin==0, test_EFGP; return; end
@@ -83,8 +84,8 @@ for dim = 1:3   % ..........
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
-  x = L*x + rand(dim,1)*shift;
-  ker = SE_ker(dim,L*l);
+  x = L*x + (2*rand(dim,1)-1)*shift;                           % scale & shift
+  ker = SE_ker(dim,L*l);             % note L also scales kernel length here
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
