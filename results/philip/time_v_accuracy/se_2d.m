@@ -42,7 +42,7 @@ for i=1:nns
     opts.tol = 1e-2 * 10^(-i);
     [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
     
-    ts(i) = info.cpu_time(end);
+    ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
     linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
 end
@@ -62,7 +62,7 @@ for i=1:nns
     opts.grid_size = 5^i;
     [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrgs, opts);
 
-    ts(i) = info.cpu_time(end);
+    ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
     linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
 end
@@ -81,7 +81,7 @@ linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
     [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
-    ts(i) = info.cpu_time(end);
+    ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
     linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
 end
