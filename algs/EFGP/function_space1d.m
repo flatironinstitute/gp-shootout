@@ -24,21 +24,21 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
 % time_info  - diagnostic list of timings
 %
 % To test this routine see: EFGP
-  
-  k = ker.k; khat = ker.khat;  % get functions, new kernel format
-  N = numel(y);
-
-  tic_precomp = tic;
-  x0 = min(x); x1 = max(x);
-  L = x1-x0;                   % approx domain length *** could check xtrg too?
-  [xis, h, m] = get_xis(ker, eps, L);
-  % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
-  xcen = (x1+x0)/2;
-  tphx = 2*pi*h*(x - xcen);
-  tphxsol = 2*pi*h*(xsol - xcen);
-  
-  % khat & quadr weight scaling of Fourier basis functions
-  ws = sqrt(khat(xis)' * h);
+    
+    k = ker.k; khat = ker.khat;  % get functions, new kernel format
+    N = numel(y);
+    
+    tic_precomp = tic;
+    x0 = min(x); x1 = max(x);
+    L = x1-x0;                   % approx domain length *** could check xtrg too?
+    [xis, h, m] = get_xis(ker, eps, L);
+    % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
+    xcen = (x1+x0)/2;
+    tphx = 2*pi*h*(x - xcen);
+    tphxsol = 2*pi*h*(xsol - xcen);
+    
+    % khat & quadr weight scaling of Fourier basis functions
+    ws = sqrt(khat(xis)' * h);
     
     % construct first row and column of toeplitz matrix for fast apply
     nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant

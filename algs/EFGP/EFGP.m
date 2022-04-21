@@ -21,6 +21,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
 %         tol - desired tolerance, eg 1e-6
+%         dense - use a (usually) slower dense linear solve instead of the
+%         iterative solver 
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -45,6 +47,8 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
+do_dense = false;
+if (isfield(opts, 'dense') && (opts.dense == true)), do_dense = true; end
 if nargin<6, opts = []; end
 if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 
@@ -53,8 +57,12 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
 xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
-                    % and transpose to Philip n*d shape                    
-if dim==1
+                    % and transpose to Philip n*d shape   
+if do_dense
+    if dim == 1
+        [info.beta, info.xis, yhat, cpu_time, info.X, info.ws] = function_space1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
+    end
+elseif dim==1
   [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
   [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
@@ -63,11 +71,16 @@ elseif dim==3
 else
   error('dim must be 1,2, or 3!');
 end
+
 info.h = info.xis(2)-info.xis(1); info.ximax = max(info.xis);   % maybe help
 % previously these times were returned as the array info.cpu_time
 info.cpu_time.total = cpu_time(4);
 info.cpu_time.precomp = cpu_time(1);
-info.cpu_time.cg = cpu_time(2);
+if do_dense
+    info.cpu_time.solve = cpu_time(2);
+else 
+    info.cpu_time.cg = cpu_time(2);
+end
 info.cpu_time.mean = cpu_time(3);
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
