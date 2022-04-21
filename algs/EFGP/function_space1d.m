@@ -31,7 +31,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
   tic_precomp = tic;
   x0 = min(x); x1 = max(x);
   L = x1-x0;                   % approx domain length *** could check xtrg too?
-  [xis h m] = get_xis(ker, eps, L);
+  [xis, h, m] = get_xis(ker, eps, L);
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;
   tphx = 2*pi*h*(x - xcen);
@@ -65,7 +65,7 @@ function [beta, xis, yhat, iter, time_info] = function_space1d(x, y, sigmasq, ke
     yhat = finufft1d2(tphxsol, +1, nuffttol, tmpvec);
     yhat = real(yhat);
     t_post = toc(tic_post);
-
+    
     time_info = [t_precomp, t_cg, t_post];
     time_info = [time_info, sum(time_info)];
 end

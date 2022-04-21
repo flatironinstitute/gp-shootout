@@ -23,7 +23,7 @@ fprintf('EFGP %d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xi
 %[y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);     % 1 min for N=1e6
 %fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
 
-fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
+fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time.total); fprintf('\n');
 fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
 % estim ability to average away noise via # pts in the rough kernel support...
 fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))

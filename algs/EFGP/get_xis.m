@@ -1,4 +1,4 @@
-function [xis] = get_xis(ker, eps, L)
+function [xis, h, m] = get_xis(ker, eps, L)
 % GET_XIS   Return 1D equispaced Fourier quadrature nodes for given tolerance
 %
 % xis = get_xis(ker, eps, L) returns an equispaced list of 1D frequency nodes
@@ -14,7 +14,8 @@ function [xis] = get_xis(ker, eps, L)
 %  Output:
 %   xis   - row-vector of equispaced values to be used as quadrature nodes
 %           (all weights in 1D are h=xis(2)-xis(1)).  Their number is odd.
-%
+%   h     - spacing between nodes
+%   m     - total number of nodes
 %  Notes:
 %  1) The spacing h is chosen using L, the real-space radial kernel function
 %     ker.k, the spatial dimension ker.dim, and an aliasing error estimate.
@@ -39,4 +40,5 @@ function [xis] = get_xis(ker, eps, L)
     
   hm = ceil(Lfreq/h);         % half number of nodes to cover [-Lfreq,Lfreq]
   xis = (-hm:hm)*h;           % use exactly h, so may have bit of spillover
+  m = numel(xis);
 end

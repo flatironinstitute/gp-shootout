@@ -30,7 +30,7 @@ function [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ke
   tic_precomp = tic;
   x0 = min(x); x1 = max(x);   % both row 2-vectors
   L = max(x1-x0);    % worst-axis domain length *** could check xsol too?
-  [xis h m] = get_xis(ker, eps, L);
+  [xis, h, m] = get_xis(ker, eps, L);
   [xis_xx, xis_yy, xis_zz] = ndgrid(xis,xis,xis);        % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec

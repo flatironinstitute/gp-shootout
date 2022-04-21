@@ -35,7 +35,10 @@ tic;   % now do GP regression with non-zero mu handled by subtraction...
 [y, ytrg, info] = EFGP(x, meas-mu, sigma^2, ker, xtrg, opts);  % regress (on diff from mu)
 y.mean = y.mean + mu; ytrg.mean = ytrg.mean + mu;  % add mu back in
 fprintf('done in %.3g sec: \t%d iters, %d xi-nodes, rms(beta)=%.3g\n',toc,info.iter,numel(info.xis)^dim,rms(info.beta))
-fprintf('CPU time breakdown (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
+fprintf('CPU time, total (s)  :'); fprintf('\t%.3g',info.cpu_time.total); fprintf('\n');
+fprintf('CPU time, precomp (s):'); fprintf('\t%.3g',info.cpu_time.precomp); fprintf('\n');
+fprintf('CPU time, cg (s)     :'); fprintf('\t%.3g',info.cpu_time.cg); fprintf('\n');
+fprintf('CPU time, mean (s)   :'); fprintf('\t%.3g',info.cpu_time.mean); fprintf('\n');
 % extract a good choice for sigma, around 0.4-0.6... *not* 0.05!
 fprintf('rms resid @ x train pts:\t%.3g (degrees C, suggests sigma)\n', rms(y.mean-meas))
 

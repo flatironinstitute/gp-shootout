@@ -39,9 +39,9 @@ for i=1:nt, opts.tol = tols(i);       % convergence study..........
   [y, ytrg, info] = EFGP(x, meas, sigma^2, ker, xtrg, opts);
   %profile off; profile viewer        % yes, it's almost all fftn :)
   ymeans(:,i) = y.mean; ytmeans(:,i) = ytrg.mean;   % save pred vecs
-  its(i) = info.iter; tims(i) = info.cpu_time(end); ms(i) = numel(info.xis);
+  its(i) = info.iter; tims(i) = info.cpu_time.total; ms(i) = numel(info.xis);
   fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
+  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time.total); fprintf('\n');
   [~,jt] = sort(xtrg(1,:).^2+xtrg(2,:).^2); jt = jt(1);   % targ pt nearest 0
   j=1; fprintf('\t conv at pts y.mean(%d)=%.10g\tytrg.mean(%d)=%.10g\n',j,y.mean(j),jt,ytrg.mean(jt));
   if N<=1e4   % make sure we're computing gp regression accurately...

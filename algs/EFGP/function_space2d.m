@@ -32,7 +32,7 @@ function [beta, xis, yhat, iter, time_info] = function_space2d(x, y, sigmasq, ke
   L = max(x1-x0);    % worst-axis domain length *** could check xsol too?
   N = size(x,1);
   quadtol = eps;  % * min(1,1e2*sigmasq/sqrt(N))   % *** in devel; 1e-16 conv
-  [xis h m] = get_xis(ker, quadtol, L);
+  [xis, h, m] = get_xis(ker, quadtol, L);
   [xis_xx, xis_yy] = ndgrid(xis, xis);    % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec

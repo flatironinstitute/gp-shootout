@@ -55,15 +55,20 @@ n = size(xtrg,2);   % # new targets
 xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
                     % and transpose to Philip n*d shape                    
 if dim==1
-  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
-  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  [info.beta, info.xis, yhat, info.iter, info.cpu_time] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end
 info.h = info.xis(2)-info.xis(1); info.ximax = max(info.xis);   % maybe help
+% previously these times were returned as the array info.cpu_time
+info.cpu_time.total = cpu_time(4);
+info.cpu_time.precomp = cpu_time(1);
+info.cpu_time.cg = cpu_time(2);
+info.cpu_time.mean = cpu_time(3);
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);
@@ -92,7 +97,7 @@ for dim = 1:3   % ..........
   % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
   fprintf('%d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-  fprintf('CPU times (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
+  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time.total); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
