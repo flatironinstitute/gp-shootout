@@ -6,7 +6,7 @@ if strcmp(host(1:4),'ross')     % alex's setup
   addpath ~/numerics/finufft/matlab
 elseif strcmp(host(1:4),'C02G') % Manas' setup 
   addpath ~/git/finufft/matlab
-else                       % default & all others (phillip)
+else                       % default & all others (philip)
   addpath ~/nufft_gps/finufft/matlab;
 end
 
