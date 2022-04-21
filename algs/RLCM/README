@@ -1,0 +1,28 @@
+Directory for RLCM method of Chen-Stein.
+Jie Chen & Michael L. Stein (2021): Linear-Cost Covariance Functions
+for Gaussian Random Fields, Journal of the American Statistical Association
+DOI: 10.1080/01621459.2021.1919122
+
+their code is in a git submodule RLCM (their package name).
+"RLCF" was a mistaken name?
+
+KRR_RLCM.cpp   -> gets compiled multiple times for diff kernels, eg:
+KRR_RLCM_IsotropicGaussian_DPoint.ex
+
+SPoint vs DPoint?  S = sparse, D = dense.  Use dense.
+see: include/Matrices/DPoint.hpp   This was not documented.
+
+
+How to write/read LibSVM format:  (C MEX files callable from MATLAB):
+https://github.com/cjlin1/libsvm/blob/master/matlab/libsvmwrite.c
+https://github.com/cjlin1/libsvm/blob/master/matlab/libsvmread.c
+
+txt format:
+
+<label> <index1>:<value1> <index2>:<value2> ...
+
+bin format?
+
+Note that Isotropic Laplace = Matern 1/2    so could use w/ KRR.
+
+Iso Gaussian is s * exp(-0.5 * r^2/sigma^2)
