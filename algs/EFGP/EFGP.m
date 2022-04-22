@@ -60,14 +60,14 @@ xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
                     % and transpose to Philip n*d shape   
 if do_dense
     if dim == 1
-        [info.beta, info.xis, yhat, cpu_time, info.A, info.ws] = function_space1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
     end
 elseif dim==1
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol);
 elseif dim==2
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space3d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end

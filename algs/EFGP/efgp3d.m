@@ -1,7 +1,7 @@
-function [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ker, eps, xsol)
-% FUNCTION_SPACE3D   equispaced Fourier NUFFT-based GP regression in 3D
+function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xsol)
+% EFGP3D   equispaced Fourier NUFFT-based GP regression in 3D
 %
-% [beta, xis, yhat, iter, time_info] = function_space3d(x, y, sigmasq, ker, eps, xsol)
+% [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xsol)
 % performs Gaussian process regression in 3D using equispaced
 % Fourier representations of Gaussian processes and fast algorithms for
 % performing regression.
