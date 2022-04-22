@@ -60,7 +60,7 @@ xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
                     % and transpose to Philip n*d shape   
 if do_dense
     if dim == 1
-        [info.beta, info.xis, yhat, cpu_time, info.X, info.ws] = function_space1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.ws] = function_space1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
     end
 elseif dim==1
   [info.beta, info.xis, yhat, info.iter, cpu_time] = function_space1d(x', meas, sigmasq, ker, opts.tol, xsol);
