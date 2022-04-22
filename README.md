@@ -26,7 +26,7 @@ python environment in which MATLAB was opened to include:
    - torch
    - gpytorch
    - pytorch
-* For RLCF: C++ compiler, ...
+* For RLCM: C++ compiler, ...
 * ...
 
 To test your installation from MATLAB shell: `startup; test_all`
@@ -62,4 +62,5 @@ to do: minimally complete example...
 * covar output to `naive_gp`?
 * datasets -> `data/*`
 * other methods -> `algs/*` (Python via system calls from matlab)
+* 1d option for dense linear solve (vs. iterative)
 
