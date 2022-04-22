@@ -5,3 +5,4 @@ densekermat
 get_randdata
 naive_gp
 EFGP
+test_vs_naive
