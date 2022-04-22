@@ -19,9 +19,8 @@ rmpath(genpath(fullfile(h,'.git')))
 rel_path_to_ski = '/algs/SKI';
 try
     path_to_ski = strcat(h, rel_path_to_ski);
-    py_path = py.sys.path;
-    if count(py_path, path_to_ski) == 0
-        insert(py_path, int32(0), path_to_ski);
+    if count(py.sys.path, path_to_ski) == 0
+        insert(py.sys.path, int32(0), path_to_ski);
     end
 catch
     fprintf('Error in finding cython\n Skipping python path\n');
