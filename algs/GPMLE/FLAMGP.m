@@ -42,7 +42,7 @@ if nargin==0, test_FLAMGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
 if nargin<6, opts = []; end
-if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
+if ~isfield(opts,'tol'), opts.tol = 1e-10; end     % default
 if ~isfield(opts,'occ')
     if(dim == 1)
         opts.occ = 20;
@@ -90,11 +90,30 @@ y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
 % posterior mean at targets
 ytrg = [];
 if do_trg
-  [~,ntrg] = size(xtrg);        % # targs
-  tic;
-  B = densekermat(ker.k,xtrg,x);   %  n-by-N
-  ytrg.mean = B * alpha;    % do the GP sum, naively
-  info.cputime(3) = toc;
+   tic;
+  [ndim,ntrg] = size(xtrg);        % # targs
+  ntot = N + ntrg;
+  xflam_targ = zeros(ndim,ntot);
+  xflam_targ(:,1:N) = x;
+  xflam_targ(:,N+1:end) = xtrg;
+  Afun_targ = @(i,j) Afunflam_targ(i,j,xflam_targ,ker,N);
+  pxyfun_targ = @(x,slf,nbr,l,ctr) pxyfunflam_targ(xflam_targ,slf,nbr,l,ctr,proxy,ker,N);
+  
+  if (isfield(opts,'v') && (opts.v == true))
+    opts_use = struct('symm','n','verb',verb);
+  else
+    opts_use = struct('symm', 'n');
+  end
+  warning('off');
+  F_targ = rskelf(Afun_targ,xflam_targ,opts.occ,opts.tol,pxyfun_targ,opts_use);
+  warning('on');
+  alpha_use = zeros(ntot,1);
+  alpha_use(1:N) = alpha;
+  ytrg_tmp = rskelf_mv(F_targ,alpha_use);
+  
+  %B = densekermat(ker.k,xtrg,x);   %  n-by-N
+  ytrg.mean = ytrg_tmp(N+1:end);    % do the GP sum, naively
+  info.cpu_time(3) = toc;
 end
 
 info.cpu_time = toc(tt1);
@@ -111,26 +130,30 @@ l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-8;
+opts.tol = 1e-10;
 
-for dim = 1:2   % ..........
+
+
+for dim = 2:2   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
+  xtrg = rand(dim,N);
   ker = SE_ker(dim,l);
-  [y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);
+  [y, ytrg, info] = FLAMGP(x, meas, sigma^2, ker, xtrg, opts);
   % run O(n^3) naive gp regression
-  [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
+  [ytrue, ytrg_true, ~] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
   fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
-  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
   % make sure we're computing gp regression accurately
   fprintf('        rms flamgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
+  fprintf('        rms flamgp vs naive at targets    %.3g\n', rms(ytrg.mean-ytrg_true.mean))
 
   % show pics
   if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
@@ -141,5 +164,4 @@ for dim = 1:2   % ..........
     caxis([-1 1]); axis equal tight
   end
   title(sprintf('FLAMGP test %dd',dim)); drawnow;
-
-end % ..........
+end
