@@ -50,7 +50,9 @@ if ~isfield(opts,'occ')
         opts.occ = 64;
     end
 end
-if ~isfield(opts,'p'), opts.p = 16; end
+if ~isfield(opts,'p'), opts.p = ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2)  ; end
+
+fprintf('p = %d\n',opts.p);
 
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
@@ -77,7 +79,7 @@ pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 % verbose mode?
 if (isfield(opts,'v') && (opts.v == true))
-    opts_use = struct('symm','p','verb',verb);
+    opts_use = struct('symm','p','verb',opts.v);
 else
     opts_use = struct('symm', 'p');
 end
@@ -86,22 +88,44 @@ tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
 alpha = rskelf_sv(F,meas);         % soln vec via solve the lin sys
 y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
-
-% posterior mean at targets
-ytrg = [];
-if do_trg
-  [~,ntrg] = size(xtrg);        % # targs
-  tic;
-  B = densekermat(ker.k,xtrg,x);   %  n-by-N
-  ytrg.mean = B * alpha;    % do the GP sum, naively
-  info.cputime(3) = toc;
-end
-
 info.cpu_time = toc(tt1);
 info.proxy = proxy;
 w = whos('F');
 info.RAM = w.bytes;
 dummy = [];
+
+% posterior mean at targets
+ytrg = [];
+if do_trg
+   tic;
+%   [ndim,ntrg] = size(xtrg);        % # targs
+%   ntot = N + ntrg;
+%   xflam_targ = zeros(ndim,ntot);
+%   xflam_targ(:,1:N) = x;
+%   xflam_targ(:,N+1:end) = xtrg;
+  %Afun_targ = @(i,j) Afunflam_targ(i,j,xflam_targ,ker,N);
+  Afun_targ = @(i,j) Afunflam_targ(i,j,xtrg,x,ker);
+  %pxyfun_targ = @(x,slf,nbr,l,ctr) pxyfunflam_targ(xflam_targ,slf,nbr,l,ctr,proxy,ker,N);
+  pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker);
+  
+  if (isfield(opts,'v') && (opts.v == true))
+    opts_use = struct('symm','n','verb',verb);
+  else
+    opts_use = struct('symm', 'n');
+  end
+  warning('off');
+  F_targ = rskel(Afun_targ,xtrg,x,opts.occ,opts.tol,pxyfun_targ,opts_use);
+  warning('on');
+%   alpha_use = zeros(ntot,1);
+%   alpha_use(1:N) = alpha;
+  ytrg.mean = rskel_mv(F_targ,alpha);
+  
+  %B = densekermat(ker.k,xtrg,x);   %  n-by-N
+  %ytrg.mean = ytrg_tmp(N+1:end);    % do the GP sum, naively
+  info.cpu_time(3) = toc;
+end
+
+
 
 
 %%%%%%%%%%
@@ -111,26 +135,30 @@ l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-8;
+opts.tol = 1e-10;
 
-for dim = 1:2   % ..........
+
+
+for dim = 2:2   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
+  xtrg = rand(dim,N);
   ker = SE_ker(dim,l);
-  [y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);
+  [y, ytrg, info] = FLAMGP(x, meas, sigma^2, ker, xtrg, opts);
   % run O(n^3) naive gp regression
-  [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);
+  [ytrue, ytrg_true, ~] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
   fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
-  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cputime); fprintf('\n');
+  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
   % make sure we're computing gp regression accurately
   fprintf('        rms flamgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
+  fprintf('        rms flamgp vs naive at targets    %.3g\n', rms(ytrg.mean-ytrg_true.mean))
 
   % show pics
   if dim==1, figure; plot(x,meas,'.'); hold on; plot(x,y.mean,'-');
@@ -141,5 +169,4 @@ for dim = 1:2   % ..........
     caxis([-1 1]); axis equal tight
   end
   title(sprintf('FLAMGP test %dd',dim)); drawnow;
-
-end % ..........
+end
