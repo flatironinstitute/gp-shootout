@@ -1,10 +1,11 @@
-function [Kpxy,nbr] = pxyfunflam_targ(x,slf,nbr,l,ctr,proxy,ker,nsrc)
+function [Kpxy,nbr] = pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker)
   pxy = proxy.*l + ctr;  % scale and translate reference points
-  [~,m] = size(pxy);
-  n = length(slf);
-  Kpxy = zeros(m,n);
-  Kpxy(:,slf<=nsrc) = densekermat(ker.k,pxy,x(:,slf(slf<=nsrc)));
-  % proxy points form ellipse of scaled "radius" 1.5 around current box
-  % keep among neighbors only those within ellipse
-  nbr = nbr(sum(((x(:,nbr) - ctr)./l).^2) < 1.5^2);
+  if rc == 'r'
+      Kpxy = densekermat(ker.k,xtrg(:,slf),pxy);
+      dr = x(:,nbr)-ctr;
+  else
+      Kpxy = densekermat(ker.k,pxy,x(:,slf));
+      dr = xtrg(:,nbr)-ctr;
+  end
+  nbr = nbr(sum((dr./l).^2) < 1.5^2);
 end

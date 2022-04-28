@@ -42,7 +42,7 @@ if nargin==0, test_FLAMGP; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
 if nargin<6, opts = []; end
-if ~isfield(opts,'tol'), opts.tol = 1e-10; end     % default
+if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if ~isfield(opts,'occ')
     if(dim == 1)
         opts.occ = 20;
@@ -50,7 +50,9 @@ if ~isfield(opts,'occ')
         opts.occ = 64;
     end
 end
-if ~isfield(opts,'p'), opts.p = 16; end
+if ~isfield(opts,'p'), opts.p = ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2)  ; end
+
+fprintf('p = %d\n',opts.p);
 
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
@@ -77,7 +79,7 @@ pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 % verbose mode?
 if (isfield(opts,'v') && (opts.v == true))
-    opts_use = struct('symm','p','verb',verb);
+    opts_use = struct('symm','p','verb',opts.v);
 else
     opts_use = struct('symm', 'p');
 end
@@ -86,18 +88,25 @@ tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
 alpha = rskelf_sv(F,meas);         % soln vec via solve the lin sys
 y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
+info.cpu_time = toc(tt1);
+info.proxy = proxy;
+w = whos('F');
+info.RAM = w.bytes;
+dummy = [];
 
 % posterior mean at targets
 ytrg = [];
 if do_trg
    tic;
-  [ndim,ntrg] = size(xtrg);        % # targs
-  ntot = N + ntrg;
-  xflam_targ = zeros(ndim,ntot);
-  xflam_targ(:,1:N) = x;
-  xflam_targ(:,N+1:end) = xtrg;
-  Afun_targ = @(i,j) Afunflam_targ(i,j,xflam_targ,ker,N);
-  pxyfun_targ = @(x,slf,nbr,l,ctr) pxyfunflam_targ(xflam_targ,slf,nbr,l,ctr,proxy,ker,N);
+%   [ndim,ntrg] = size(xtrg);        % # targs
+%   ntot = N + ntrg;
+%   xflam_targ = zeros(ndim,ntot);
+%   xflam_targ(:,1:N) = x;
+%   xflam_targ(:,N+1:end) = xtrg;
+  %Afun_targ = @(i,j) Afunflam_targ(i,j,xflam_targ,ker,N);
+  Afun_targ = @(i,j) Afunflam_targ(i,j,xtrg,x,ker);
+  %pxyfun_targ = @(x,slf,nbr,l,ctr) pxyfunflam_targ(xflam_targ,slf,nbr,l,ctr,proxy,ker,N);
+  pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker);
   
   if (isfield(opts,'v') && (opts.v == true))
     opts_use = struct('symm','n','verb',verb);
@@ -105,22 +114,18 @@ if do_trg
     opts_use = struct('symm', 'n');
   end
   warning('off');
-  F_targ = rskelf(Afun_targ,xflam_targ,opts.occ,opts.tol,pxyfun_targ,opts_use);
+  F_targ = rskel(Afun_targ,xtrg,x,opts.occ,opts.tol,pxyfun_targ,opts_use);
   warning('on');
-  alpha_use = zeros(ntot,1);
-  alpha_use(1:N) = alpha;
-  ytrg_tmp = rskelf_mv(F_targ,alpha_use);
+%   alpha_use = zeros(ntot,1);
+%   alpha_use(1:N) = alpha;
+  ytrg.mean = rskel_mv(F_targ,alpha);
   
   %B = densekermat(ker.k,xtrg,x);   %  n-by-N
-  ytrg.mean = ytrg_tmp(N+1:end);    % do the GP sum, naively
+  %ytrg.mean = ytrg_tmp(N+1:end);    % do the GP sum, naively
   info.cpu_time(3) = toc;
 end
 
-info.cpu_time = toc(tt1);
-info.proxy = proxy;
-w = whos('F');
-info.RAM = w.bytes;
-dummy = [];
+
 
 
 %%%%%%%%%%
