@@ -26,8 +26,8 @@ python environment in which MATLAB was opened to include:
    - torch
    - gpytorch
    - pytorch
-* For RLCM: C++ compiler, ...
-* ...
+* For RLCM: C++ compiler (and RLCM installed as submodule)
+* FLAM: (FLAM is installed as a submodule)
 
 To test your installation from MATLAB shell: `startup; test_all`
 
@@ -63,4 +63,4 @@ to do: minimally complete example...
 * datasets -> `data/*`
 * other methods -> `algs/*` (Python via system calls from matlab)
 * 1d option for dense linear solve (vs. iterative)
-
+* RLCM wrapped via binary tmp file IO.

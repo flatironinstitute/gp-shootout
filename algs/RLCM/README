@@ -3,8 +3,17 @@ Jie Chen & Michael L. Stein (2021): Linear-Cost Covariance Functions
 for Gaussian Random Fields, Journal of the American Statistical Association
 DOI: 10.1080/01621459.2021.1919122
 
-their code is in a git submodule RLCM (their package name).
-"RLCF" was a mistaken name?
+their code is in a git submodule RLCM (their package name; ahbarnett fork).
+("RLCF" was a mistaken name?)
+
+To build it:
+./buildit.sh
+
+For future revised builds you may beed to cd to apps/KRR/
+and simply do make.
+
+
+--------- notes:
 
 KRR_RLCM.cpp   -> gets compiled multiple times for diff kernels, eg:
 KRR_RLCM_IsotropicGaussian_DPoint.ex
