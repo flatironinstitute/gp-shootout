@@ -12,6 +12,9 @@ KRR_RLCM_IsotropicGaussian_DPoint.ex
 SPoint vs DPoint?  S = sparse, D = dense.  Use dense.
 see: include/Matrices/DPoint.hpp   This was not documented.
 
+how to use DPoint, PointArrayFormat  & read IO:
+see: src/Misc/LibSVM_IO_binary.cpp
+
 
 How to write/read LibSVM format:  (C MEX files callable from MATLAB):
 https://github.com/cjlin1/libsvm/blob/master/matlab/libsvmwrite.c
@@ -26,3 +29,14 @@ bin format?
 Note that Isotropic Laplace = Matern 1/2    so could use w/ KRR.
 
 Iso Gaussian is s * exp(-0.5 * r^2/sigma^2)
+
+run with:
+NumClasses = 1
+Budget = 0
+
+Sigma  = \ell, the lengthscale
+What is lambda ? The nugget? (ie for K(x,x) only)?
+test/Test_IsotropicGaussian.cpp
+
+
+
