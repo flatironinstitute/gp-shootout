@@ -112,7 +112,7 @@ ker = SE_ker(dim, l);
 sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('%dd max difference at target points %g\t(CPU time: %.3g s)\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
 
 
 % generates warnings: /usr/local/opt/python/Frameworks/Python.framework/

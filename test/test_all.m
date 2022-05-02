@@ -5,8 +5,11 @@ densekermat
 get_randdata
 naive_gp
 EFGP
-test_vs_naive
 FLAMGP
 
-% things which require compilation:
+% things which require compilation or inter-language pain
 %RLCM
+%SKI
+
+% experiments not unit tests:
+%test_vs_naive

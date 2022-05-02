@@ -29,7 +29,8 @@ python environment in which MATLAB was opened to include:
 * For RLCM: C++ compiler (and RLCM installed as submodule)
 * FLAM: (FLAM is installed as a submodule)
 
-To test the basic installation from MATLAB shell: `startup; test_all`
+To test the basic installation, start MATLAB from the top-level `gp-shootout`
+directory (which will execute `startup`), then within MATLAB type `test_all`
 
 To build then test all wrapped methods:
 from shell do `(cd algs/RLCM; ./buildit.sh)`
@@ -39,9 +40,9 @@ then from MATLAB do `RLCM`.
 
 ### Usage
 
-From MATLAB, first run `startup` to add required paths and apply useful settings.
+If you did not start MATLAB from the top-level directory, then run `startup` to add required paths and apply useful settings.
 
-You may try to run `expt` for a demo.
+Look in `drivers` for example scripts. You may try to run `expt` for a demo.
 
 to do: minimally complete example...
 
@@ -70,3 +71,4 @@ to do: minimally complete example...
 * other methods -> `algs/*` (Python via system calls from matlab)
 * 1d option for dense linear solve (vs. iterative)
 * RLCM wrapped via binary tmp file IO, tested
+* switched matlab pyenv engine setting to OutOfProcess to prevent crashes
