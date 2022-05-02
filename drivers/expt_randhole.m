@@ -1,5 +1,6 @@
 % test 2D rand data with a big hole in it, to test ill-cond, fill-in,
 % large-beta instability wrt opts.tol, sigma->0, incons data, etc.
+% Currently does a tol-sweep and plots convergence, timing, iters, etc, vs tol.
 % Barnett 4/19/22
 
 clear; verb = 1;

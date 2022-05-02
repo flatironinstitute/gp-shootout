@@ -52,6 +52,7 @@ to do: minimally complete example...
 
 ### To do
 
+* add Matern to RLCM (it's SE only so far)
 * insert switch from EFGP to SSGP w/ same xi quad nodes.
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
