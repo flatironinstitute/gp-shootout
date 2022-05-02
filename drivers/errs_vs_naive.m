@@ -49,7 +49,7 @@ for dim = 1:3
 
   % RLCM - needs user to have compiled, via, eg algs/RCLM/buildit.sh...
   opts = [];       % there's no tol param for RLCM
-  opts.rank = 200;      % some kinda convergence param
+  opts.rank = 200;      % some kinda convergence param (large needed in 3D?)
   [y4, ~, info4] = RLCM(x, meas, sigma^2, ker, [], opts);
   fprintf('RLCM   rms vs naive %.3g,\t time: %.3g s\n', rms(y4.mean-ytrue.mean), info4.cpu_time.total);
 

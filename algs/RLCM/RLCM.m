@@ -16,6 +16,7 @@ function [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrg, opts)
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
 %         dense - uses wrapper to RLCM's dense Standard O(N^3) method [not RLCM]
+%         verb  - 0 (default) for silent; >0 for text diagnostic output
 %         seed - 0 for random, or use as RLCM seed.
 %         rank - RLCM matrix block rank param (see paper)
 %         par = 'RAND' or 'PCA' (string), partitioning method.
@@ -35,6 +36,7 @@ function [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrg, opts)
 if nargin==0, test_RLCM; return; end
 if nargin<5, xtrg = []; end
 if nargin<6, opts = []; end
+if ~isfield(opts,'verb'), opts.verb = 0; end
 if ~isfield(opts,'seed'), opts.seed = 0; end     % defaults for RLCM pars
 if ~isfield(opts,'rank'), opts.rank = 125; end    % (see RLCM .cpp source)
 if ~isfield(opts,'par'), opts.par='RAND'; end
@@ -76,8 +78,9 @@ else                       % the real thing: RLCM fast alg for large N
 end
 
 if strcmp(ker.fam,'squared-exponential')   % variable var, ell; also sigma^2
-  cmd = sprintf('%s/%s_IsotropicGaussian_DPoint.ex %d %d %s %d %s %s %d %.15g %.15g %.15g %s',dir,exechead,nthread,N,filetrain,N+n,filextrg,fileypred,dim,ker.l,ker.k(0),sigmasq,methargs)
+  cmd = sprintf('%s/%s_IsotropicGaussian_DPoint.ex %d %d %s %d %s %s %d %d %.15g %.15g %.15g %s',dir,exechead,nthread,N,filetrain,N+n,filextrg,fileypred,dim,opts.verb,ker.l,ker.k(0),sigmasq,methargs);
 end
+if opts.verb, cmd, end          % report
 t0=tic;
 status = system(cmd);
 if status~=0, error('executable had error exit code, stopping!'); end
@@ -90,7 +93,7 @@ if count~=N+n, error('cannot read correct number ypred vals!'); end
 
 y.mean = ypred(1:N);         % unpack
 ytrg.mean = ypred(N+1:end);
-
+if opts.verb, disp('RLCM done'); end
 
 
 %%%%%%%%%%
@@ -103,6 +106,7 @@ freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 L=1; shift = 0;   % nodes in [0,1]^dim
 %L = 50.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 opts.dense = 0;   % 0 = RLCM; 1 = force KRR_Standard (not RLCM)
+opts.verb = 0;
 opts.rank = 125;  % 125 std = fast (1e4 pts/s), 1000 = slow (300 pts/s)
 
 for dim = 1:3   % ..........
