@@ -29,7 +29,12 @@ python environment in which MATLAB was opened to include:
 * For RLCM: C++ compiler (and RLCM installed as submodule)
 * FLAM: (FLAM is installed as a submodule)
 
-To test your installation from MATLAB shell: `startup; test_all`
+To test the basic installation from MATLAB shell: `startup; test_all`
+
+To build then test all wrapped methods:
+from shell do `(cd algs/RLCM; ./buildit.sh)`
+then from MATLAB do `RLCM`.
+
 
 
 ### Usage
@@ -47,6 +52,7 @@ to do: minimally complete example...
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
 * understand empirical error breakdown as sigma->0 at large N
+* understand CG num iters growing like 1/tol^2
 
 
 ### Done (CHANGELOG)
@@ -63,4 +69,4 @@ to do: minimally complete example...
 * datasets -> `data/*`
 * other methods -> `algs/*` (Python via system calls from matlab)
 * 1d option for dense linear solve (vs. iterative)
-* RLCM wrapped via binary tmp file IO.
+* RLCM wrapped via binary tmp file IO, tested

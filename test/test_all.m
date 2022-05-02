@@ -6,4 +6,7 @@ get_randdata
 naive_gp
 EFGP
 test_vs_naive
-RLCM
+FLAMGP
+
+% things which require compilation:
+%RLCM

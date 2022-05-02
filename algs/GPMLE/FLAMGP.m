@@ -1,5 +1,5 @@
 function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
-% EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
+% FLAMGP  GP regression via recursive skeletonization, in dim 1 or 2.
 %
 % [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  performs Gaussian process regression using an arbitrary smooth(ish)
