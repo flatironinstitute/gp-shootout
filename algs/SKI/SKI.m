@@ -26,7 +26,7 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes use
 %     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for gaussian process regression
+%     cputime - struct with timing fields including: total
 %     and evaluation of posterior mean at target points
 %     iter - # iterations needed
 %
@@ -50,7 +50,7 @@ testxpy = py.numpy.array(xsol');
 ski_out = py.ski.gpr(xpy, ypy, testxpy, opts.grid_size, sigmasq, ker.fam, ker.l);
 % unpack ski output
 yhat = double(ski_out{1})';
-info.cpu_time = ski_out{2};
+info.cpu_time.total = ski_out{2};
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);
@@ -81,7 +81,7 @@ ker = SE_ker(dim, l);
 sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 ntest = 10000;
 testx = linspace(0, 1, ntest);
@@ -89,7 +89,7 @@ testx(1) = x(1);
 testx(ntest) = x(N);
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 
 % now in 2d
@@ -112,7 +112,7 @@ ker = SE_ker(dim, l);
 sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g\t(CPU time: %.3g s)\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 
 % generates warnings: /usr/local/opt/python/Frameworks/Python.framework/

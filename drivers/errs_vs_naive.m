@@ -37,14 +37,14 @@ for dim = 1:3
   opts = [];             % start afresh. There's no tol param for SKI
   opts.grid_size = 50;   % 1000
   [y2, ~, info2] = SKI(x, meas, sigma^2, ker, [], opts);
-  fprintf('SKI    rms vs naive %.3g,\t time: %.3g s\n', rms(y2.mean-ytrue.mean), info2.cpu_time);
+  fprintf('SKI    rms vs naive %.3g,\t time: %.3g s\n', rms(y2.mean-ytrue.mean), info2.cpu_time.total);
 
   % FLAMGP (currently throws error in 3d)
   if dim < 3
     opts = [];
     opts.tol = tol;      % crucial
     [y3, ~, info3] = FLAMGP(x, meas, sigma^2, ker, [], opts);
-    fprintf('FLAMGP rms vs naive %.3g,\t time: %.3g s\n', rms(y3.mean-ytrue.mean), info3.cpu_time);
+    fprintf('FLAMGP rms vs naive %.3g,\t time: %.3g s\n', rms(y3.mean-ytrue.mean), info3.cpu_time.total);
   end
 
   % RLCM - needs user to have compiled, via, eg algs/RCLM/buildit.sh...

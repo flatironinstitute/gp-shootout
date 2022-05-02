@@ -1,4 +1,6 @@
-% run all tests (make sure startup run first)
+% run all tests of pure-matlab things.
+% See README.md
+% (Also see: test_all_nonmatlab for trickier cross-language interfaces).
 
 test_kers
 densekermat
@@ -6,10 +8,3 @@ get_randdata
 naive_gp
 EFGP
 FLAMGP
-
-% things which require compilation or inter-language pain
-%RLCM
-%SKI
-
-% experiments not unit tests:
-%test_vs_naive
