@@ -32,9 +32,11 @@ python environment in which MATLAB was opened to include:
 To test the basic installation, start MATLAB from the top-level `gp-shootout`
 directory (which will execute `startup`), then within MATLAB type `test_all`.
 
-To build then test all wrapped non-MATLAB methods:
-1) make sure you can call python from matlab, eg via `py.sys.version`.
-2) from shell do `(cd algs/RLCM; ./buildit.sh)`,
+Advanced: to build then test all wrapped non-MATLAB methods:
+
+1) make sure you can call python from matlab, eg via `py.sys.version`
+2) from shell do `(cd algs/RLCM; ./buildit.sh)`
+
 then from MATLAB run `test_all_nonmatlab`.
 
 
@@ -54,7 +56,8 @@ to do: minimally complete example...
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
 * understand empirical error breakdown as sigma->0 at large N
-* understand CG num iters growing like 1/tol^2
+* understand CG num iters growing like 1/sqrt(tol)
+* protect from annoying FLAM chol fail if tol too large
 
 
 ### Done (CHANGELOG)
