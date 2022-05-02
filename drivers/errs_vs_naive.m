@@ -7,13 +7,13 @@
 % It is thus part of the accuracy experiments rather than a self-test for
 % any particular method (AHB), hence not in test/
 
-N = 1000;        % problem size (small, matching naive, for now)
+N = 4000;        % problem size (small, matching naive, for now)
 l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
 
-tol = 1e-8;      % feed to as many algs as need it
+tol = 1e-8;      % feed to as many algs as need it. FLAM has chol err if big
 
 for dim = 1:3
 

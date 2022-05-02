@@ -21,7 +21,7 @@ function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %         tol - desired tolerance, default: 1e-6
 %         occ - max number of points per box, (default 64)
 %         p - number of proxy points;
-%         v - verbose;
+%         v - verbose: 0=silent [default], 1=diagnostics incl from FLAM.
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -51,8 +51,11 @@ if ~isfield(opts,'occ')
     end
 end
 if ~isfield(opts,'p'), opts.p = ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2)  ; end
+if ~isfield(opts,'v'), opts.v = 0; end
 
-fprintf('p = %d\n',opts.p);
+if opts.v
+  fprintf('FLAMGP start: p = %d\n',opts.p);
+end
 
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
@@ -78,7 +81,7 @@ pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 
 % verbose mode?
-if (isfield(opts,'v') && (opts.v == true))
+if opts.v
     opts_use = struct('symm','p','verb',opts.v);
 else
     opts_use = struct('symm', 'p');
@@ -137,8 +140,8 @@ l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-10;
-
+opts.tol = 1e-10;      % chol err if too big :(
+opts.v = 0;
 
 
 for dim = 2:2   % ..........

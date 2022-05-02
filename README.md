@@ -1,6 +1,6 @@
 # gp-shootout
 
-Benchmark and compare large-scale GP regression methods in 1D, 2D, and 3D,
+Benchmark and compare several large-scale GP regression methods in 1D, 2D, and 3D,
 including our implementation of the equispaced Fourier method (EFGP).
 We also generate figures and tables for the paper.
 
@@ -19,7 +19,7 @@ Required dependencies:
 
 Dependencies specific to methods:
 
-* For EFGP: FINUFFT (version 2.0 or later; please specify its location in `startup.m`).
+* For EFGP (and its option SSGP): FINUFFT (version 2.0 or later; please specify its location in `startup.m`).
 * For SKI: Python 3.7, 3.8, or 3.9 (not 3.10, since MATLAB has not caught up), with
 python environment in which MATLAB was opened to include:
    - numpy
@@ -30,11 +30,12 @@ python environment in which MATLAB was opened to include:
 * FLAM: (FLAM is installed as a submodule)
 
 To test the basic installation, start MATLAB from the top-level `gp-shootout`
-directory (which will execute `startup`), then within MATLAB type `test_all`
+directory (which will execute `startup`), then within MATLAB type `test_all`.
 
-To build then test all wrapped methods:
-from shell do `(cd algs/RLCM; ./buildit.sh)`
-then from MATLAB do `RLCM`.
+To build then test all wrapped non-MATLAB methods:
+1) make sure you can call python from matlab, eg via `py.sys.version`.
+2) from shell do `(cd algs/RLCM; ./buildit.sh)`,
+then from MATLAB run `test_all_nonmatlab`.
 
 
 
