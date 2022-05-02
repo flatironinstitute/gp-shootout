@@ -1,10 +1,11 @@
 function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
-% SKI   GP regression via SKI algorithm in dim=1,2
+% SKI   GP regression via SKI algorithm in 1 or more dimension
 %
 % [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
-%  performs Gaussian process regression 
+%  performs Gaussian process regression via SKI using gpytorch.
+%
 %  NOTE: when performing regression for data on [0, 1], we need data points
-%  (x) at x=0 and x=1
+%  (x) at x=0 and x=1.   *** is this still true?
 %  
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -24,16 +25,11 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     xis - Fourier xi nodes use
-%     beta - m*1 vector of weight-space (Fourier basis) weights
 %     cputime - struct with timing fields including: total
-%     and evaluation of posterior mean at target points
-%     iter - # iterations needed
 %
 % If called without arguments, does a self-test.
 
-
-% Notes: 1) this code is a wrapper to a python implementation of ski
+% Notes: 1) this code is a wrapper to a python implementation of SKI
 if nargin==0, test_SKI; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
