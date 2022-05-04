@@ -1,4 +1,4 @@
-function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
+function [ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
 % [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -25,7 +25,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %         iterative solver 
 %
 % Outputs:
-%  y - struct with fields of regression results corresp to given data points x:
+%  y - REMOVED FOR NOW. struct with fields of regression results corresp to given data points x:
 %     mean - posterior mean vector, N*1
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
@@ -56,8 +56,9 @@ if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
-xsol = [x, xtrg]';  % hack for now which adds meas pts to target list
-                    % and transpose to Philip n*d shape   
+%%%xsol = [x, xtrg]';  % for timing purposes, don't combine these for now 
+xsol = xtrg';          % and transpose to Philip n*d shape   
+
 if do_dense
     if dim == 1
         [info.beta, info.xis, yhat, cpu_time, info.A, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
@@ -83,8 +84,9 @@ else
 end
 info.cpu_time.mean = cpu_time(3);
 
-y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
-ytrg.mean = yhat(N+1:end);
+%%%y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
+%%%ytrg.mean = yhat(N+1:end);
+ytrg.mean = yhat;
 
 
 %%%%%%%%%%
