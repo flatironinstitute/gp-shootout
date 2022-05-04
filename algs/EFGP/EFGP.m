@@ -1,4 +1,4 @@
-function [ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
+function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 % EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
 %
 % [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -87,6 +87,9 @@ info.cpu_time.mean = cpu_time(3);
 %%%y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 %%%ytrg.mean = yhat(N+1:end);
 ytrg.mean = yhat;
+% this is a placeholder in order to keep the calling sequence the same but
+% do unnecessary computation of evaluating posterior mean at data points
+y.mean = 0; 
 
 
 %%%%%%%%%%
