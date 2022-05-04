@@ -32,7 +32,7 @@ for meth=[1 2 3 4]
       %opts.grid_size = *** ?   opts.tol ignored.
       [y, ~, info] = SKI(x, meas, sigma^2, ker, [], opts);
     case 4, disp('RLCM...')
-      opts.rank = 200;    % may want to tweak this.  opts.tol ignored
+      %opts.rank = 200;    % may want to tweak this.  opts.tol ignored
       [y, ~, info] = RLCM(x, meas, sigma^2, ker, [], opts);
   end
   fprintf('CPU time (s):\n'); disp(info.cpu_time);
