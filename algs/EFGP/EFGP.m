@@ -56,7 +56,7 @@ if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
-%%%xsol = [x, xtrg]';  % for timing purposes, don't combine these for now 
+xsol = [x, xtrg]';  % for timing purposes, don't combine these for now 
 xsol = xtrg';          % and transpose to Philip n*d shape   
 
 if do_dense
@@ -84,12 +84,9 @@ else
 end
 info.cpu_time.mean = cpu_time(3);
 
-%%%y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
-%%%ytrg.mean = yhat(N+1:end);
-ytrg.mean = yhat;
-% this is a placeholder in order to keep the calling sequence the same but
-% do unnecessary computation of evaluating posterior mean at data points
-y.mean = 0; 
+y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
+ytrg.mean = yhat(N+1:end);
+%%%ytrg.mean = yhat;
 
 
 %%%%%%%%%%
