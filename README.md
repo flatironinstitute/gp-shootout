@@ -1,6 +1,6 @@
 # gp-shootout
 
-Benchmark and compare large-scale GP regression methods in 1D, 2D, and 3D,
+Benchmark and compare several large-scale GP regression methods in 1D, 2D, and 3D,
 including our implementation of the equispaced Fourier method (EFGP).
 We also generate figures and tables for the paper.
 
@@ -19,34 +19,46 @@ Required dependencies:
 
 Dependencies specific to methods:
 
-* For EFGP: FINUFFT (version 2.0 or later; please specify its location in `startup.m`).
+* For EFGP (and its option SSGP): FINUFFT (version 2.0 or later; please specify its location in `startup.m`).
 * For SKI: Python 3.7, 3.8, or 3.9 (not 3.10, since MATLAB has not caught up), with
 python environment in which MATLAB was opened to include:
    - numpy
    - torch
    - gpytorch
    - pytorch
-* For RLCM: C++ compiler, ...
-* ...
+* For RLCM: C++ compiler (and RLCM installed as submodule)
+* FLAM: (FLAM is installed as a submodule)
 
-To test your installation from MATLAB shell: `startup; test_all`
+To test the basic installation, start MATLAB from the top-level `gp-shootout`
+directory (which will execute `startup`), then within MATLAB type `test_all`.
+
+Advanced: to build then test all wrapped non-MATLAB methods:
+
+1) make sure you can call python from matlab, eg via `py.sys.version`
+2) from shell do `(cd algs/RLCM; ./buildit.sh)`
+
+then from MATLAB run `test_all_nonmatlab`.
+
 
 
 ### Usage
 
-From MATLAB, first run `startup` to add required paths and apply useful settings.
+If you did not start MATLAB from the top-level directory, then run `startup` to add required paths and apply useful settings.
 
-You may try to run `expt` for a demo.
+Look in `drivers` for example scripts. You may try to run `expt` for a demo.
 
 to do: minimally complete example...
 
 
 ### To do
 
+* add Matern to RLCM (it's SE only so far)
 * insert switch from EFGP to SSGP w/ same xi quad nodes.
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
 * understand empirical error breakdown as sigma->0 at large N
+* understand CG num iters growing like 1/sqrt(tol)
+* protect from annoying FLAM chol fail if tol too large
 
 
 ### Done (CHANGELOG)
@@ -63,4 +75,5 @@ to do: minimally complete example...
 * datasets -> `data/*`
 * other methods -> `algs/*` (Python via system calls from matlab)
 * 1d option for dense linear solve (vs. iterative)
-
+* RLCM wrapped via binary tmp file IO, tested
+* switched matlab pyenv engine setting to OutOfProcess to prevent crashes

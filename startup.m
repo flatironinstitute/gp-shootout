@@ -1,9 +1,10 @@
-% global matlab setup
+% global matlab setup (will be automatically run if matlab started in this dir)
 
 % point to library locations here, based on machine name
 [status,host] = system('uname -n');
 if strcmp(host(1:4),'ross')     % alex's setup
   addpath ~/numerics/finufft/matlab
+  % for alex, MATLAB has to be started from conda env idp (py 3.7)
 elseif strcmp(host(1:4),'C02G') % Manas' setup 
   addpath ~/git/finufft/matlab
 else                       % default & all others (philip)
@@ -14,6 +15,10 @@ end
 h = fileparts(mfilename('fullpath'));
 addpath(genpath(h))                        % gives access to all subdirs
 rmpath(genpath(fullfile(h,'.git')))
+
+% try prevent Py crashes at cost of performance...
+% see: https://www.mathworks.com/matlabcentral/answers/486171-how-do-i-troubleshoot-a-matlab-crash-when-trying-to-use-the-python-interface?s_cid=pl_crsh_an
+pyenv("ExecutionMode","OutOfProcess");
 
 % add to python path for python calls
 rel_path_to_ski = '/algs/SKI';

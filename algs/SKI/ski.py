@@ -5,6 +5,12 @@ import numpy as np
 
 
 def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
+    """
+    GPR: Gaussian process regression via Python wrapper to SKI
+
+    mean, cputime = gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True)
+    """
+    
     train_x = torch.tensor(train_x).double()
     train_y = torch.tensor(train_y).double()
     test_x = torch.tensor(test_x).double()

@@ -1,10 +1,11 @@
 function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
-% SKI   GP regression via SKI algorithm in dim=1,2
+% SKI   GP regression via SKI algorithm in 1 or more dimension
 %
 % [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
-%  performs Gaussian process regression 
+%  performs Gaussian process regression via SKI using gpytorch.
+%
 %  NOTE: when performing regression for data on [0, 1], we need data points
-%  (x) at x=0 and x=1
+%  (x) at x=0 and x=1.   *** is this still true?
 %  
 % Inputs:
 %  x    - points (ordinates) where observations taken, d*N real array for d dims
@@ -24,16 +25,11 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     xis - Fourier xi nodes use
-%     beta - m*1 vector of weight-space (Fourier basis) weights
-%     cputime - list of times in seconds for gaussian process regression
-%     and evaluation of posterior mean at target points
-%     iter - # iterations needed
+%     cputime - struct with timing fields including: total
 %
 % If called without arguments, does a self-test.
 
-
-% Notes: 1) this code is a wrapper to a python implementation of ski
+% Notes: 1) this code is a wrapper to a python implementation of SKI
 if nargin==0, test_SKI; return; end
 if nargin<5, xtrg = []; end
 do_trg = ~isempty(xtrg);
@@ -50,7 +46,7 @@ testxpy = py.numpy.array(xsol');
 ski_out = py.ski.gpr(xpy, ypy, testxpy, opts.grid_size, sigmasq, ker.fam, ker.l);
 % unpack ski output
 yhat = double(ski_out{1})';
-info.cpu_time = ski_out{2};
+info.cpu_time.total = ski_out{2};
 
 y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
 ytrg.mean = yhat(N+1:end);
@@ -81,7 +77,7 @@ ker = SE_ker(dim, l);
 sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 ntest = 10000;
 testx = linspace(0, 1, ntest);
@@ -89,7 +85,7 @@ testx(1) = x(1);
 testx(ntest) = x(N);
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 
 % now in 2d
@@ -112,7 +108,7 @@ ker = SE_ker(dim, l);
 sigmasq = sigma_true^2;
 [yhat, ytrg, info] = SKI(x, meas, sigmasq, ker, testx, opts);
 [yhat2, ytrg2, ~] = naive_gp(x, meas, sigmasq, ker, testx, []);
-fprintf('%dd max difference at target points %g in %g\n', dim, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time);
+fprintf('SKI test dim=%d, N=%d, ntest=%d:   \tmax diff %.5g   \t(time %.3g s)\n', dim, N, ntest, max(abs(ytrg.mean - ytrg2.mean)), info.cpu_time.total);
 
 
 % generates warnings: /usr/local/opt/python/Frameworks/Python.framework/

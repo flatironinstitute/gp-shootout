@@ -1,5 +1,5 @@
 function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
-% EFGP   GP regression via equispaced Fourier iterative method, in dim=1,2 or 3
+% FLAMGP  GP regression via recursive skeletonization, in dim 1 or 2.
 %
 % [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  performs Gaussian process regression using an arbitrary smooth(ish)
@@ -21,7 +21,7 @@ function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %         tol - desired tolerance, default: 1e-6
 %         occ - max number of points per box, (default 64)
 %         p - number of proxy points;
-%         v - verbose;
+%         v - verbose: 0=silent [default], 1=diagnostics incl from FLAM.
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -29,7 +29,7 @@ function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
 %  info - diagnostic struct containing fields:
-%     cpu_time - run time in seconds
+%     cpu_time - struct with fields giving run times in seconds, incl: total
 %     RAM - memory usage in bytes
 %     proxy - list of proxy pts used (for unit scale box)
 %
@@ -51,8 +51,11 @@ if ~isfield(opts,'occ')
     end
 end
 if ~isfield(opts,'p'), opts.p = ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2)  ; end
+if ~isfield(opts,'v'), opts.v = 0; end
 
-fprintf('p = %d\n',opts.p);
+if opts.v
+  fprintf('FLAMGP start: p = %d\n',opts.p);
+end
 
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
@@ -78,7 +81,7 @@ pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 
 % verbose mode?
-if (isfield(opts,'v') && (opts.v == true))
+if opts.v
     opts_use = struct('symm','p','verb',opts.v);
 else
     opts_use = struct('symm', 'p');
@@ -86,9 +89,11 @@ end
 
 tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
+info.cpu_time.factor = toc(tt1);
 alpha = rskelf_sv(F,meas);         % soln vec via solve the lin sys
 y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
-info.cpu_time = toc(tt1);
+info.cpu_time.total = toc(tt1);
+info.cpu_time.solve = info.cpu_time.total - info.cpu_time.factor;
 info.proxy = proxy;
 w = whos('F');
 info.RAM = w.bytes;
@@ -122,7 +127,7 @@ if do_trg
   
   %B = densekermat(ker.k,xtrg,x);   %  n-by-N
   %ytrg.mean = ytrg_tmp(N+1:end);    % do the GP sum, naively
-  info.cpu_time(3) = toc;
+  info.cpu_time.targs = toc;
 end
 
 
@@ -135,12 +140,12 @@ l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-10;
-
+opts.tol = 1e-10;      % chol err if too big :(
+opts.v = 0;
 
 
 for dim = 2:2   % ..........
-  fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
+  fprintf('\ntest FLAMGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
   f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
@@ -152,12 +157,12 @@ for dim = 2:2   % ..........
   % run O(n^3) naive gp regression
   [ytrue, ytrg_true, ~] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
   fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
-  fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time); fprintf('\n');
+  fprintf('CPU time (s):\n'); disp(info.cpu_time)
   fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
   % estim ability to average away noise via # pts in the rough kernel support...
   fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
   % make sure we're computing gp regression accurately
-  fprintf('        rms flamgp vs naive      %.3g\n', rms(y.mean-ytrue.mean))
+  fprintf('        rms flamgp vs naive               %.3g\n', rms(y.mean-ytrue.mean))
   fprintf('        rms flamgp vs naive at targets    %.3g\n', rms(ytrg.mean-ytrg_true.mean))
 
   % show pics

@@ -1,8 +1,7 @@
-% driver script for an experiment.
-% (copied from self-test of EFGP)
+% driver script for an experiment. (copied from self-test of EFGP)
 clear; verb = 1;
 
-N = 1e5;        % problem size
+N = 1e6;        % problem size
 l = 0.1;        % kernel scale
 sigma = 0.1;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
@@ -19,11 +18,7 @@ ker = SE_ker(dim,l);
 fprintf('\ntest N=%d, sigma=%.3g, tol=%.3g, dim=%d...\n',N,sigma,opts.tol,dim)
 [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);     % regress
 fprintf('EFGP %d iters,\t %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
-
-%[y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);     % 1 min for N=1e6
-%fprintf('%d proxies \t %.g GB RAM\n',numel(info.proxy),info.RAM/1e9)
-
-fprintf('CPU time (s):'); fprintf('\t%.3g',info.cpu_time.total); fprintf('\n');
+fprintf('CPU time (s):'); disp(info.cpu_time)
 fprintf('y.mean: rms err vs meas data   %.3g\t(should be about sigmadata=%.3g)\n', rms(y.mean-meas),sigmadata)
 % estim ability to average away noise via # pts in the rough kernel support...
 fprintf('        rms truemeas pred err  %.3g\t(should be sqrt(l^d.N) better ~ %.2g)\n', rms(y.mean-truemeas),sigmadata/sqrt(l^dim*N))
