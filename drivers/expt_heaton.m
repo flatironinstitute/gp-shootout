@@ -16,7 +16,7 @@
 % for 'sat', sigma=0.9 tol=1e-5 gets 0.88 resid, 1.36 MAE, in 22 sec (500 its)
 
 clear; verb = 1;
-type = 'sat';  % 'sim' (simulated GP) or 'sat' (real data)
+type = 'sim';  % 'sim' (simulated GP) or 'sat' (real data)
 [x,meas,~,xtrg,truetrg] = get_Heatondata(type);
 dim = 2;  % fix
 
@@ -33,9 +33,8 @@ nu = 1/2; ker = Matern_ker(dim,nu,l,var); opts.tol = 1e-5;  % tol<1e-5 hurts!
 %l = 0.1; ker = SE_ker(dim,l,var); opts.tol = 1e-7;  % try easier kernel
 
 N = numel(meas); Ntrg = numel(truetrg);
-%for meths={'EFGP','FLAMGP','SKI','RLCM'} % SKI tries to alloc 90GB, fails
-% and RLCM doesn't have Matern yet, only SE :(
-for meths={'EFGP','FLAMGP'}                  % -- METHODS LOOP -----
+%for meths={'EFGP','FLAMGP','SKI','RLCM'} % RLCM not Matern yet, only SE :(
+for meths={'EFGP','FLAMGP','SKI'}                  % -- METHODS LOOP -----
   meth=meths{1};
   fprintf('\nHeaton, method %s: \tN=%d (Ntrg=%d), sigma=%.3g, tol=%.3g...\n',meth,N,Ntrg,sigma,opts.tol)
   % now do GP regression with non-zero mu handled by subtraction,
@@ -69,3 +68,14 @@ for meths={'EFGP','FLAMGP'}                  % -- METHODS LOOP -----
   end
 end                                         % --------------------------------
 
+% results for 'sat' dataset @ sigma=0.9:
+% EFGP @ tol=1e-5:  23sec,  0.877 rms resid,  1.36 MAE test
+% FLAMGP tol=1e-5:  18sec,  0.669 rms resid,  1.37 MAE test
+% SKI     "         14sec,  1.32   "          1.85 "           (v inaccurate!)
+%                           (visually can see SKI's rect-aliasing)
+
+% results for 'sim' dataset @ sigma=0.4:
+% EFGP @ tol=1e-5:  38sec,  0.414 rms resid,  0.624 MAE test  (good: aim 0.6)
+% FLAMGP tol=1e-5:  17sec,  0.226 rms resid,  0.602 MAE test
+% SKI     "         18sec,  0.564   "         0.743 "           (inaccurate)
+%                           (again, can see SKI's rect-aliasing)
