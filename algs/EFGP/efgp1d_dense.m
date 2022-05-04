@@ -31,7 +31,7 @@ function [beta, xis, yhat, time_info, A, ws] = function_space1d_dense(x, y, sigm
     N = numel(y);
     
     tic_precomp = tic;
-    x0 = min(x); x1 = max(x);
+    x0 = min([x; xsol]); x1 = max([x; xsol]);
     L = x1-x0;                   % approx domain length *** could check xtrg too?
     [xis, h, m] = get_xis(ker, eps, L);
     % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
