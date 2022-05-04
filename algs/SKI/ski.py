@@ -4,22 +4,22 @@ import gpytorch
 import numpy as np
 
 
-def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True):
+def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, do_default):
     """
     GPR: Gaussian process regression via Python wrapper to SKI
 
-    mean, cputime = gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True)
+    mean, cputime = gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True, do_default)
     """
-    
+
     train_x = torch.tensor(train_x).double()
     train_y = torch.tensor(train_y).double()
     test_x = torch.tensor(test_x).double()
     grid_size = int(grid_size)
     double = int(double)
-
+    
     # initialize model for ski
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = gpr_model(train_x, train_y, likelihood, grid_size, kern_family)
+    model = gpr_model(train_x, train_y, likelihood, grid_size, kern_family, do_default)
 
     if double:
         model.double()
@@ -48,7 +48,7 @@ def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True
 
 
 class gpr_model(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood, grid_size, kern_family):
+    def __init__(self, train_x, train_y, likelihood, grid_size, kern_family, do_default):
         super(gpr_model, self).__init__(train_x, train_y, likelihood)
 
         # SKI requires a grid size hyperparameter. This util can help with 
@@ -56,8 +56,9 @@ class gpr_model(gpytorch.models.ExactGP):
         # as the training data (a ratio of 1.0). Performance can be sensitive 
         # to this parameter, so you may want to adjust it for your own problem 
         # on a validation set.
-        ###grid_size = gpytorch.utils.grid.choose_grid_size(train_x, 1.0)
-
+        if do_default:
+            grid_size = gpytorch.utils.grid.choose_grid_size(train_x, 1.0)
+        
         if len(train_x.size()) > 1:
             [_, dim] = train_x.size()
         else:
