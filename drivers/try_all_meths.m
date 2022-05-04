@@ -1,12 +1,13 @@
 % simply try to run all meths on a larger example. AHB 5/2/22
+% *** to do: add compare soln vectors.
 clear; verb = 0;
 
 N = 1e5;        % problem size  (>=1e5 breaks SKI)
 l = 0.1;        % kernel scale
-sigma = 0.1;    % used to regress
+sigma = 1.0;    % used to regress (1 = easy, 0.1 = harder, 0.01 = ill cond...)
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-6;   % not used by all meths
+opts.tol = 1e-6;   % note: not used by all meths
 dim = 2;
 unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
 wavevec = freqdata*unitvec;    % col vec
@@ -19,7 +20,7 @@ ker = SE_ker(dim,l);
 fprintf('\ntest N=%d, sigma=%.3g, tol=%.3g, dim=%d...\n',N,sigma,opts.tol,dim)
 
 % *** to do: compare soln vectors!
-for meth=[1 2 4]
+for meth=[1 2 3 4]
   switch meth
     case 1, disp('EFGP...')
       [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);     % regress
@@ -27,9 +28,11 @@ for meth=[1 2 4]
     case 2, disp('FLAMGP...')
       [y, ~, info] = FLAMGP(x, meas, sigma^2, ker, [], opts);     % 1 min for N=1e6
       fprintf('%d proxies \t %.g GB RAM, times:\n',numel(info.proxy),info.RAM/1e9)
-    case 3, disp('SKI...')       % *** has problems even passing back small N
+    case 3, disp('SKI...')
+      %opts.grid_size = *** ?   opts.tol ignored.
       [y, ~, info] = SKI(x, meas, sigma^2, ker, [], opts);
     case 4, disp('RLCM...')
+      %opts.rank = 200;    % may want to tweak this.  opts.tol ignored
       [y, ~, info] = RLCM(x, meas, sigma^2, ker, [], opts);
   end
   fprintf('CPU time (s):\n'); disp(info.cpu_time);

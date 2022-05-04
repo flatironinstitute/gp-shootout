@@ -1,0 +1,61 @@
+> try_all_meths
+
+test N=100000, sigma=1, tol=1e-06, dim=2...
+EFGP...
+EFGP 200 iters,	 841 xi-nodes, rms(beta)=0.316
+CPU time (s):
+      total: 0.127805
+    precomp: 0.016353
+         cg: 0.10366
+       mean: 0.007792
+y.mean: rms err vs meas data   1	(should be about sigmadata=1)
+        rms truemeas pred err  0.0397	(should be sqrt(l^d.N) better ~ 0.032)
+FLAMGP...
+200 proxies 	 0.04 GB RAM, times:
+CPU time (s):
+    factor: 5.559681
+     total: 5.71596
+     solve: 0.156279
+y.mean: rms err vs meas data   1	(should be about sigmadata=1)
+        rms truemeas pred err  0.0397	(should be sqrt(l^d.N) better ~ 0.032)
+SKI...
+CPU time (s):
+    total: 13.2955203056335
+y.mean: rms err vs meas data   1	(should be about sigmadata=1)
+        rms truemeas pred err  0.0416	(should be sqrt(l^d.N) better ~ 0.032)
+RLCM...
+CPU time (s):
+    total: 20.489321
+y.mean: rms err vs meas data   1	(should be about sigmadata=1)
+        rms truemeas pred err  0.0409	(should be sqrt(l^d.N) better ~ 0.032)
+>> try_all_meths
+
+test N=1000000, sigma=1, tol=1e-06, dim=2...
+EFGP...
+EFGP 431 iters,	 841 xi-nodes, rms(beta)=0.341
+CPU time (s):
+      total: 0.320854
+    precomp: 0.095357
+         cg: 0.182608
+       mean: 0.042889
+y.mean: rms err vs meas data   0.999	(should be about sigmadata=1)
+        rms truemeas pred err  0.014	(should be sqrt(l^d.N) better ~ 0.01)
+FLAMGP...
+200 proxies 	 0.4 GB RAM, times:
+CPU time (s):
+    factor: 47.011351
+     total: 48.341495
+     solve: 1.330144
+y.mean: rms err vs meas data   0.999	(should be about sigmadata=1)
+        rms truemeas pred err  0.014	(should be sqrt(l^d.N) better ~ 0.01)
+SKI...
+CPU time (s):
+    total: 297.194305181503
+y.mean: rms err vs meas data   0.999	(should be about sigmadata=1)
+        rms truemeas pred err  0.0179	(should be sqrt(l^d.N) better ~ 0.01)
+RLCM...
+CPU time (s):
+    total: 232.09148
+y.mean: rms err vs meas data   0.999	(should be about sigmadata=1)
+        rms truemeas pred err  0.0145	(should be sqrt(l^d.N) better ~ 0.01)
+

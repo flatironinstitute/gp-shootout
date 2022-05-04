@@ -53,6 +53,7 @@ to do: minimally complete example...
 ### To do
 
 * add Matern to RLCM (it's SE only so far)
+* FLAMGP in 3D
 * insert switch from EFGP to SSGP w/ same xi quad nodes.
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
@@ -75,5 +76,6 @@ to do: minimally complete example...
 * datasets -> `data/*`
 * other methods -> `algs/*` (Python via system calls from matlab)
 * 1d option for dense linear solve (vs. iterative)
-* RLCM wrapped via binary tmp file IO, tested
+* RLCM wrapped (SE ker only) via binary tmp file IO, tested in d=1,2,3.
 * switched matlab pyenv engine setting to OutOfProcess to prevent crashes
+* SKI fixed mem alloc problem
