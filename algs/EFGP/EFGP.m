@@ -57,7 +57,7 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 n = size(xtrg,2);   % # new targets
 
 xsol = [x, xtrg]';  % for timing purposes, don't combine these for now 
-xsol = xsol';          % and transpose to Philip n*d shape   
+          % and transpose to Philip n*d shape   
 
 if do_dense
     if dim == 1
