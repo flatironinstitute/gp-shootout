@@ -3,7 +3,7 @@
 % GPR, then adding back in.
 % The Heaton et al. 2019 paper doesn't state the best/used kernel params for
 % this data, but we pulled them out of the github repo.
-% Barnett, April 2022. Various methods, 5/2/22.
+% Barnett, April 2022. Various methods, 5/2/22. RLCM 5/5/22.
 %
 % old EFGP results.... v sensitive to tol :(
 % 'sim' decent sigma~0.6 now (but tol is not indicative, due to ill-cond still):
@@ -15,8 +15,8 @@
 % We see that sigma = 0.4-0.6 is a realistic choice for meas error, *not* 0.05!
 % for 'sat', sigma=0.9 tol=1e-5 gets 0.88 resid, 1.36 MAE, in 22 sec (500 its)
 
-clear; verb = 1;
-type = 'sim';  % 'sim' (simulated GP) or 'sat' (real data)
+clear; verb = 1;  % 0 no figs, 1 figs.
+type = 'sat';     % choose: 'sim' (simulated GP) or 'sat' (real data)
 [x,meas,~,xtrg,truetrg] = get_Heatondata(type);
 dim = 2;  % fix
 
@@ -29,25 +29,28 @@ if strcmp(type,'sim'), sigma = 0.4; else, sigma = 0.9; end  % estim by resid
 var = 16.40771;     % overall prior variance = covar kernel C(0) (sig rel to it)
 l = 1/0.75;   % Matern kernel length in degrees; ignore wrong LON scale :(
 
-nu = 1/2; ker = Matern_ker(dim,nu,l,var); opts.tol = 1e-5;  % tol<1e-5 hurts!
-%l = 0.1; ker = SE_ker(dim,l,var); opts.tol = 1e-7;  % try easier kernel
+nu = 1/2; ker = Matern_ker(dim,nu,l,var);
+%l = 0.1; ker = SE_ker(dim,l,var);  % try easier wrong kernel
 
 N = numel(meas); Ntrg = numel(truetrg);
-%for meths={'EFGP','FLAMGP','SKI','RLCM'} % RLCM not Matern yet, only SE :(
-for meths={'EFGP','FLAMGP','SKI'}                  % -- METHODS LOOP -----
-  meth=meths{1};
-  fprintf('\nHeaton, method %s: \tN=%d (Ntrg=%d), sigma=%.3g, tol=%.3g...\n',meth,N,Ntrg,sigma,opts.tol)
+for meths={'EFGP','FLAMGP','SKI','RLCM'}           % -- METHODS LOOP -----
+  meth=meths{1};      % make not a 1-element cell array
+  fprintf('\nHeaton, method %s: \tN=%d (Ntrg=%d), sigma=%.3g...\n',meth,N,Ntrg,sigma)
   % now do GP regression with non-zero mu handled by subtraction,
   % ie regress on diff from mu....
   switch meth
     case 'EFGP'
+      opts = []; opts.tol = 1e-5;  % tol<1e-5 hurts!
       [y, ytrg, info] = EFGP(x, meas-mu, sigma^2, ker, xtrg, opts);
       fprintf('\t%d iters, %d xi-nodes, rms(beta)=%.3g\n',info.iter,numel(info.xis)^dim,rms(info.beta))
     case 'FLAMGP'
+      opts = []; opts.tol = 1e-5;
       [y, ytrg, info] = FLAMGP(x, meas-mu, sigma^2, ker, xtrg, opts);
     case 'SKI'
+      opts = []; opts.grid_size = 300;    % who knows?
       [y, ytrg, info] = SKI(x, meas-mu, sigma^2, ker, xtrg, opts);
     case 'RLCM'
+      opts = []; opts.rank = 250;   % higher than 200 needed for decent 2d acc
       [y, ytrg, info] = RLCM(x, meas-mu, sigma^2, ker, xtrg, opts);
   end
   y.mean = y.mean + mu; ytrg.mean = ytrg.mean + mu;  % add mu back in
@@ -68,14 +71,17 @@ for meths={'EFGP','FLAMGP','SKI'}                  % -- METHODS LOOP -----
   end
 end                                         % --------------------------------
 
+
+% RESULTS TABLE
+
 % results for 'sat' dataset @ sigma=0.9:
-% EFGP @ tol=1e-5:  23sec,  0.877 rms resid,  1.36 MAE test
-% FLAMGP tol=1e-5:  18sec,  0.669 rms resid,  1.37 MAE test
-% SKI     "         14sec,  1.32   "          1.85 "           (v inaccurate!)
-%                           (visually can see SKI's rect-aliasing)
+% EFGP @ tol=1e-5:  22sec,  0.877 rms resid,   1.36 MAE test
+% FLAMGP tol=1e-5:  26sec,  0.669 rms (v good) 1.37 MAE test
+% SKI    grid=300   14sec,  1.32   "           1.86 "   (v inacc; see rect errs)
+% RLCM   rank=250   52s  ,  0.673     (v good) 1.42 "         (ok)
 
 % results for 'sim' dataset @ sigma=0.4:
-% EFGP @ tol=1e-5:  38sec,  0.414 rms resid,  0.624 MAE test  (good: aim 0.6)
-% FLAMGP tol=1e-5:  17sec,  0.226 rms resid,  0.602 MAE test
-% SKI     "         18sec,  0.564   "         0.743 "           (inaccurate)
-%                           (again, can see SKI's rect-aliasing)
+% EFGP @ tol=1e-5:  34sec,  0.414 rms resid,  0.624 MAE test  (good: aim 0.6)
+% FLAMGP tol=1e-5:  26sec,  0.226 rms (good), 0.602 MAE test  (good)
+% SKI    grid=300   18sec,  0.564   "         0.741 "    (inacc; see rect errs)
+% RLCM   rank=250   51s  ,  0.225     (good)  0.634 "         (good)
