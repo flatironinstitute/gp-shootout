@@ -59,7 +59,6 @@ to do: minimally complete example...
 * other top-level fig-generating driver scripts
 * understand empirical error breakdown as sigma->0 at large N
 * understand CG num iters growing like 1/sqrt(tol)
-* protect from annoying FLAM chol fail if tol too large
 
 
 ### Done (CHANGELOG)
@@ -79,3 +78,4 @@ to do: minimally complete example...
 * RLCM wrapped (SE ker only) via binary tmp file IO, tested in d=1,2,3.
 * switched matlab pyenv engine setting to OutOfProcess to prevent crashes
 * SKI fixed mem alloc problem
+* protect from annoying FLAM chol fail if tol too large

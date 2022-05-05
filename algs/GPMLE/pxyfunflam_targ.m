@@ -7,5 +7,11 @@ function [Kpxy,nbr] = pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker)
       Kpxy = densekermat(ker.k,pxy,x(:,slf));
       dr = xtrg(:,nbr)-ctr;
   end
-  nbr = nbr(sum((dr./l).^2) < 1.5^2);
+  [ndim,~] = size(dr);
+  if(ndim == 1) 
+    nbr = nbr(abs(dr)/l < 1.5);
+  else
+      
+    nbr = nbr(sum((dr./l).^2) < 1.5^2);
+  end
 end

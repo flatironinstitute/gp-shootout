@@ -18,7 +18,6 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
 %         grid_size - ski grid size
-%         default_grid_size - use ski default grid size
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -38,16 +37,9 @@ if nargin<6, opts = []; end
 
 [dim, N] = size(x);
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
-% use default grid size if specified by user or if opts.grid_size doesn't
-% exist
+% use default grid size if opts.grid_size doesn't exist
 do_default = false;
-if isfield(opts, 'default_grid_size')
-    if opts.default_grid_size
-        do_default = true;
-    end
-end
-if ~isfield(opts,'grid_size'), do_default = true; opts.grid_size = 0; end     % default
-
+if ~isfield(opts,'grid_size'), do_default = true; opts.grid_size = -1; end     % need argument opts.grid_size, so just set to some number
 
 xsol = [x, xtrg];  % hack for now which adds meas pts to target list
 xpy = py.numpy.array(x');

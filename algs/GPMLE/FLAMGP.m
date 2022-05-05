@@ -82,9 +82,9 @@ pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
 
 % verbose mode?
 if opts.v
-    opts_use = struct('symm','p','verb',opts.v);
+    opts_use = struct('symm','n','verb',opts.v);
 else
-    opts_use = struct('symm', 'p');
+    opts_use = struct('symm', 'n');
 end
 
 tt1 = tic;
