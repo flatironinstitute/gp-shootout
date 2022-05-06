@@ -57,7 +57,7 @@ function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xs
     % solve linear system
     tic_cg = tic; 
     cgtol = eps;                  % I find ok; NB was eps/10, vs eps in dim=1,2
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, m^3);
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, 3*m^3);
     t_cg = toc(tic_cg);
 
     % evaluate posterior mean 

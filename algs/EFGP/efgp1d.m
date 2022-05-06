@@ -56,7 +56,7 @@ function [beta, xis, yhat, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xs
     Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigmasq .* a; 
     
     tic_cg = tic; 
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, m);  % solve beta vec
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, 3*m);  % solve beta vec
     t_cg = toc(tic_cg);
     
     % tabulate solution using fft

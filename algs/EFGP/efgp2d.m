@@ -59,7 +59,7 @@ function [beta, xis, yhat, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
     % solve linear system
     tic_cg = tic;
     cgtol = eps;         % smaller doesn't help for ill-cond case
-    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,cgtol,m^2);
+    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,cgtol,3*m^2);
     t_cg = toc(tic_cg);
     
     % evaluate posterior mean 
