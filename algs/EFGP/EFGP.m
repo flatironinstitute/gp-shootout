@@ -22,6 +22,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  opts - [optional] struct controlling method params including:
 %         tol - desired tolerance, eg 1e-6
 %         dense - use a (usually) slower dense linear solve instead of the
+%         only_trgs - only compute posterior mean at targets
 %         iterative solver 
 %
 % Outputs:
@@ -58,10 +59,11 @@ n = size(xtrg,2);   % # new targets
 
 xsol = [x, xtrg]';  % for timing purposes, don't combine these for now 
           % and transpose to Philip n*d shape   
+if isfield(opts, 'only_trgs'), xsol = xtrg'; end
 
 if do_dense
     if dim == 1
-        [info.beta, info.xis, yhat, cpu_time, info.A, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
     end
 elseif dim==1
   [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol);
@@ -84,9 +86,14 @@ else
 end
 info.cpu_time.mean = cpu_time(3);
 
-y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
-ytrg.mean = yhat(N+1:end);
-%%%ytrg.mean = yhat;
+if isfield(opts, 'only_trgs')
+    y.mean = [];
+    ytrg.mean = yhat; 
+else
+    y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
+    ytrg.mean = yhat(N+1:end);
+end
+
 
 
 %%%%%%%%%%
