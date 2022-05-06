@@ -18,6 +18,7 @@ function [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrg, opts)
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
 %         grid_size - ski grid size
+%         only_trgs - only compute posterior mean at targets
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -42,6 +43,8 @@ do_default = false;
 if ~isfield(opts,'grid_size'), do_default = true; opts.grid_size = -1; end     % need argument opts.grid_size, so just set to some number
 
 xsol = [x, xtrg];  % hack for now which adds meas pts to target list
+if isfield(opts, 'only_trgs'), xsol = xtrg; end
+
 xpy = py.numpy.array(x');
 ypy = py.numpy.array(meas');
 testxpy = py.numpy.array(xsol');
@@ -51,8 +54,13 @@ ski_out = py.ski.gpr(xpy, ypy, testxpy, opts.grid_size, sigmasq, ker.fam, ker.l,
 yhat = double(ski_out{1})';
 info.cpu_time.total = ski_out{2};
 
-y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
-ytrg.mean = yhat(N+1:end);
+if isfield(opts, 'only_trgs')
+    y.mean = [];
+    ytrg.mean = yhat; 
+else
+    y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
+    ytrg.mean = yhat(N+1:end);
+end
 
 
 %%%%%%%%%%

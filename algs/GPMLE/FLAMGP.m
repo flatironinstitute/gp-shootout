@@ -21,6 +21,7 @@ function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %         tol - desired tolerance, default: 1e-6
 %         occ - max number of points per box, (default 64)
 %         p - number of proxy points;
+%         only_targs - only compute posterior mean at targets
 %         v - verbose: 0=silent [default], 1=diagnostics incl from FLAM.
 %
 % Outputs:
@@ -91,7 +92,10 @@ tt1 = tic;
 F = rskelf(Afun,x,opts.occ,opts.tol,pxyfun,opts_use);
 info.cpu_time.factor = toc(tt1);
 alpha = rskelf_sv(F,meas);         % soln vec via solve the lin sys
-y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
+y.mean = [];
+if ~isfield(opts,'only_trgs')
+    y.mean = meas - alpha*sigmasq;     % magic formula for means at data pts
+end
 info.cpu_time.total = toc(tt1);
 info.cpu_time.solve = info.cpu_time.total - info.cpu_time.factor;
 info.proxy = proxy;
