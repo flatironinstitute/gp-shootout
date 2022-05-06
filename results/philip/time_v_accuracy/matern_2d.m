@@ -1,22 +1,22 @@
 % accuracy vs time for for fixed N
-rng(1);
+clear opts;
 
-% data
-N = 1e5;
-f = @(x) cos(6*2*pi*x) / 2;
-sigmatrue = 0.5;
 dim = 2;
-unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
-freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-wavevec = freqdata*unitvec;    % col vec
-f = @(x) cos(2*pi*x'*wavevec + 1.3);   % underlying func, must give col vec
-[x, meas, truemeas] = get_randdata(dim, N, f, sigmatrue);% for ski
-x(:, 1) = [0; 0];
-x(:, N) = [1; 1];
+
+% set directory for saving results and loading data
+dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+
+% sigma used to generate data and to be used for regression
+load(fullfile(dir, 'sigmatrue.mat'));
+
+% load data
+load(fullfile(dir, 'x_2d_1e5.mat'));
+load(fullfile(dir, 'meas_2d_1e5.mat'));
 
 % targets
 ntrgs = 100;
 xtrgs = equispaced_grid(dim, ntrgs);
+opts.only_trgs = 1;
 
 % kernel
 sigmasq = sigmatrue^2;
@@ -25,21 +25,26 @@ var = 1;
 nu = 0.5;
 ker = Matern_ker(dim, nu, l, var);
 
+% get accurate solution
+opts.v = true;
+opts.tol = 1e-8;
+[y0, ytrg_true0, info0] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+opts.tol = 1e-10;
+[y, ytrg_true, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+save(fullfile(dir, 'matern_2d_true.mat'), 'ytrg_true');
+save(fullfile(dir, 'matern_2d_true0.mat'), 'ytrg_true0');
+save(fullfile(dir, 'matern_2d_x.mat'), 'x');
+save(fullfile(dir, 'matern_2d_meas.mat'), 'meas');
 
-% % get accurate solution
-% opts.tol = 1e-4;
-% [y0, ytrg_true0, info0] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
-% opts.tol = opts.tol / 10;
-% [y, ytrg_true, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
-% fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
-% save('matern_2d_true.mat','ytrg_true');
-% save('matern_2d_true0.mat','ytrg_true0');
-% save('matern_2d_x.mat','x');
-% save('matern_2d_meas.mat','meas');
+load(fullfile(dir, 'matern_2d_true.mat'));
+load(fullfile(dir, 'matern_2d_true0.mat'));
+load(fullfile(dir, 'matern_2d_x.mat'));
+load(fullfile(dir, 'matern_2d_meas.mat'));
+fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
 
-load('matern_2d_true.mat');
-load('matern_2d_x.mat');
-load('matern_2d_meas.mat');
+
+
+
 
 
 % EFGP
@@ -63,7 +68,7 @@ save('efgp_2d_matern.mat','efgp_2d_matern');
 
 
 % SKI
-nns = 2;
+nns = 3;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
@@ -84,11 +89,12 @@ save('ski_2d_matern.mat','ski_2d_matern');
 
 
 % FLAM
-nns = 1;
+nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
+    opts.tol = 10^(-4 + i); 
     [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
@@ -112,3 +118,14 @@ plot(log10(ski_2d_matern.rms_errs), log10(ski_2d_matern.ts), '-o');
 plot(log10(flam_2d_matern.rms_errs), log10(flam_2d_matern.ts), '-o');
 set ( gca, 'xdir', 'reverse' );
 hold off;
+
+
+
+
+% print for paper
+fprintf('EFGP\n')
+print_tikz(log10(efgp_2d_matern.rms_errs), log10(efgp_2d_matern.ts))
+fprintf('\nSKI\n')
+print_tikz(log10(ski_2d_matern.rms_errs), log10(ski_2d_matern.ts))
+fprintf('\nFLAM\n')
+print_tikz(log10(flam_2d_matern.rms_errs), log10(flam_2d_matern.ts))
