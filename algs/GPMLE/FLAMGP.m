@@ -48,10 +48,10 @@ if ~isfield(opts,'occ')
     if(dim == 1)
         opts.occ = 20;
     elseif(dim == 2)
-        opts.occ = 64;
+        opts.occ = 100;
     end
 end
-if ~isfield(opts,'p'), opts.p = ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2)  ; end
+if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 
 if opts.v
