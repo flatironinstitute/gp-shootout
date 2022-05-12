@@ -26,7 +26,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %         iterative solver 
 %
 % Outputs:
-%  y - REMOVED FOR NOW. struct with fields of regression results corresp to given data points x:
+%  y - struct with fields of regression results corresp to given data points x:
 %     mean - posterior mean vector, N*1
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
