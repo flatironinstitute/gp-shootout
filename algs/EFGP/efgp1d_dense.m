@@ -1,4 +1,4 @@
-function [beta, xis, yhat, time_info, A, ws] = function_space1d_dense(x, y, sigmasq, ker, eps, xsol)
+function [beta, xis, ytrg, time_info, A, X, ws] = efgp1d_dense(x, y, sigmasq, ker, eps, xsol, do_var)
 % FUNCTION_SPACE1D_DENSE   equispaced Fourier GP regression in 1D by
 % constructing the matrix of the linear system and doing a dense solve. 
 %
@@ -32,13 +32,9 @@ function [beta, xis, yhat, time_info, A, ws] = function_space1d_dense(x, y, sigm
     
     tic_precomp = tic;
     x0 = min([x; xsol]); x1 = max([x; xsol]);
-    L = x1-x0;                   % approx domain length *** could check xtrg too?
+    L = x1-x0;                   % approx domain length
     [xis, h, m] = get_xis(ker, eps, L);
-    % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
-    xcen = (x1+x0)/2;
-    tphx = 2*pi*h*(x - xcen);
-    tphxsol = 2*pi*h*(xsol - xcen);
-    
+
     % khat & quadr weight scaling of Fourier basis functions
     ws = sqrt(khat(xis)' * h);
     t_precomp = toc(tic_precomp);
@@ -49,17 +45,25 @@ function [beta, xis, yhat, time_info, A, ws] = function_space1d_dense(x, y, sigm
     beta = (A + sigmasq * eye(m)) \ (diag(ws) * X' * y);
     t_solve = toc(tic_solve);
     
-    % tabulate solution using fft
-    tic_post = tic;
-    tmpvec = ws .* beta;
-    nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant
-    yhat = finufft1d2(tphxsol, +1, nuffttol, tmpvec);
-    
     % tabulate posterior mean
+    tic_post = tic;
     Xsol = exp(1i * xsol * xis * 2 * pi) * diag(ws);
     yhat = Xsol * beta;
-    yhat = real(yhat);
+    ytrg.mean = real(yhat);
     t_post = toc(tic_post);
     
+    % if specified by user, compute posterior variance at target points via
+    % the the diagonal of F C^{-1} F' where C is the posterior covariance
+    % matrix and F is the matrix of basis functions (complex exponentials)
+    % tabulated at target points
+    if do_var
+        nsol = numel(xsol);
+        ytrg.var = zeros(nsol, 1);
+        c = (A / sigmasq) + eye(m);
+        c_inv = inv(c);
+        fs = exp(1i * 2 * pi * xsol * xis) * diag(ws);
+        ytrg.var = real(diag(fs * c_inv * fs'));
+    end
+
     time_info = [t_precomp, t_solve, t_post, t_post - t_precomp];
 end
