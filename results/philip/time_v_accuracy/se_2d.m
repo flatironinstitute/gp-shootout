@@ -27,6 +27,16 @@ l = 0.1;
 dim = 2;
 ker = SE_ker(dim,l);
 
+opts.tol = 1e-8;
+[y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+opts.tol = 1e-10;
+[y2, ytrg2, info2] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+    ts(i) = info.cpu_time.total;
+    rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
+    linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
+
+
+
 % get accurate solution
 opts.tol = 1e-12;
 [y_true0, ytrg_true0, info0] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
@@ -39,7 +49,6 @@ fprintf('\n');
 %%%[y, ytrg_true, ~] = naive_gp(x, meas, sigmasq, ker, xtrgs, []);
 fprintf('max dd: %g\n', max(abs(ytrg_true0.mean - ytrg_true.mean)));
 fprintf('rms dd: %g\n', rms(ytrg_true0.mean - ytrg_true.mean));
-
 
 
 
