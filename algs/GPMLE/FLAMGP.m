@@ -49,11 +49,14 @@ if ~isfield(opts,'occ')
         opts.occ = 20;
     elseif(dim == 2)
         opts.occ = 100;
+    elseif(dim == 3)
+        opts.occ = 300;
     end
 end
 if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 
+opts.p = 5;
 if opts.v
   fprintf('FLAMGP start: p = %d\n',opts.p);
 end
@@ -63,7 +66,7 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 verb = 1;
 
 if(dim == 1)
-    proxy = linspace(1.5,2.5,opts.p); proxy = [-proxy proxy];  % proxy points
+    proxy = linspace(0.1,2.5,opts.p); proxy = [-proxy proxy];  % proxy points
 elseif(dim == 2)
     theta_proxy = (1:opts.p)*2*pi/opts.p;
     proxy_ = [cos(theta_proxy); sin(theta_proxy)];
@@ -71,14 +74,28 @@ elseif(dim == 2)
     for r = linspace(1.5,2.5,opts.p)        % mysterious shells
      proxy = [proxy r*proxy_];
     end
+elseif (dim == 3)
+    theta_proxy = (1:opts.p)*pi/opts.p;
+    phi_proxy = (1:opts.p)*2*pi/opts.p;
+    [tt,pp] = meshgrid(theta_proxy,phi_proxy);
+    tt = tt(:)';
+    pp = pp(:)';
+    proxy_ = [sin(tt).*cos(pp); sin(tt).*sin(pp); cos(tt)];
+    proxy = [];
+    for r = linspace(1.5,2.5,opts.p)        % mysterious shells
+     proxy = [proxy r*proxy_];
+    end
+        
+    
 else
-  error('dim>2 not implemented!');
+  error('dim>3 not implemented!');
 end
 
 clear theta_proxy proxy_;
 
 Afun = @(i,j) Afunflam(i,j,x,ker,sigmasq);
 pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
+%pxyfun = [];
 
 
 % verbose mode?
@@ -107,15 +124,9 @@ dummy = [];
 ytrg = [];
 if do_trg
    tic;
-%   [ndim,ntrg] = size(xtrg);        % # targs
-%   ntot = N + ntrg;
-%   xflam_targ = zeros(ndim,ntot);
-%   xflam_targ(:,1:N) = x;
-%   xflam_targ(:,N+1:end) = xtrg;
-  %Afun_targ = @(i,j) Afunflam_targ(i,j,xflam_targ,ker,N);
   Afun_targ = @(i,j) Afunflam_targ(i,j,xtrg,x,ker);
-  %pxyfun_targ = @(x,slf,nbr,l,ctr) pxyfunflam_targ(xflam_targ,slf,nbr,l,ctr,proxy,ker,N);
   pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker);
+  %pxyfun_targ = [];
   
   if (isfield(opts,'v') && (opts.v == true))
     opts_use = struct('symm','n','verb',verb);
@@ -139,16 +150,16 @@ end
 
 %%%%%%%%%%
 function test_FLAMGP   % basic tests for now, duplicates naive_gp *** to unify
-N = 3e3;        % problem size (small, matching naive, for now)
+N = 4e3;        % problem size (small, matching naive, for now)
 l = 0.1;        % SE kernel scale
-sigma = 0.3;    % used to regress
+sigma = 0.5;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-10;      % chol err if too big :(
-opts.v = 0;
+opts.tol = 1e-9;      % chol err if too big :(
+opts.v = 1;
 
 
-for dim = 2:2   % ..........
+for dim = 3:3   % ..........
   fprintf('\ntest FLAMGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
