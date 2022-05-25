@@ -36,13 +36,13 @@ save(fullfile(dir, 'matern_2d_true0.mat'), 'ytrg_true0');
 save(fullfile(dir, 'matern_2d_x.mat'), 'x');
 save(fullfile(dir, 'matern_2d_meas.mat'), 'meas');
 
+return
+
 load(fullfile(dir, 'matern_2d_true.mat'));
 load(fullfile(dir, 'matern_2d_true0.mat'));
 load(fullfile(dir, 'matern_2d_x.mat'));
 load(fullfile(dir, 'matern_2d_meas.mat'));
 fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
-
-
 
 
 
@@ -93,8 +93,10 @@ nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
+opts.v = true;
 for i=1:nns
-    opts.tol = 10^(-4 + i); 
+    disp(i);
+    opts.tol = 10^(-4 - i); 
     [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);

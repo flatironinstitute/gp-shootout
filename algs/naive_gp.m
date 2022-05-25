@@ -18,7 +18,7 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 %  xtrg - [optional, or may be empty] targets points, d*n real array for d dims.
 %         If non-empty, attempts to compute ytrg outputs.
 %  opts - [optional] struct controlling method params including:
-%         getvar - if true, compute conditional variances at xtrg [*** todo implement covariances]
+%         get_var - if true, compute conditional variances at xtrg
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -35,7 +35,7 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 % If called without arguments, does a self-test
 if nargin==0, test_naive_gp; return; end
 do_trg = (nargin>=5 && ~isempty(xtrg));
-do_var = (nargin>=5 && ~isempty(opts) && isfield(opts,'getvar'));
+do_var = (nargin>=5 && ~isempty(opts) && isfield(opts,'get_var'));
 [dim,N] = size(x);
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 if N>1e4, warning('N getting too big for naive method!'); end

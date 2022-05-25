@@ -22,14 +22,15 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %  opts - [optional] struct controlling method params including:
 %         tol - desired tolerance, eg 1e-6
 %         dense - use a (usually) slower dense linear solve instead of the
+%         iterative solver
 %         only_trgs - only compute posterior mean at targets
-%         iterative solver 
 %
 % Outputs:
-%  y - REMOVED FOR NOW. struct with fields of regression results corresp to given data points x:
+%  y - struct with fields of regression results corresp to given data points x:
 %     mean - posterior mean vector, N*1
 %  ytrg - [optional; otherwise empty] struct of regression at new targets xtrg:
 %     mean - posterior mean vector, n*1
+%     var - [optional] posterior variance vector, n*1
 %  info - diagnostic struct containing fields:
 %     xis - Fourier xi nodes used
 %     h - their spacing
@@ -47,6 +48,7 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
+do_var = (nargin>=5 && ~isempty(opts) && isfield(opts,'get_var'));
 do_trg = ~isempty(xtrg);
 do_dense = false;
 if (isfield(opts, 'dense') && (opts.dense == true)), do_dense = true; end
@@ -63,10 +65,10 @@ if isfield(opts, 'only_trgs'), xsol = xtrg'; end
 
 if do_dense
     if dim == 1
-        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
     end
 elseif dim==1
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol);
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
 elseif dim==2
   [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
@@ -88,12 +90,15 @@ info.cpu_time.mean = cpu_time(3);
 
 if isfield(opts, 'only_trgs')
     y.mean = [];
-    ytrg.mean = yhat; 
+    ytrg.mean = yhat.mean; 
 else
-    y.mean = yhat(1:N);   % hack for now to split out posterior means into two types
-    ytrg.mean = yhat(N+1:end);
+    y.mean = yhat.mean(1:N);   % hack for now to split out posterior means into two types
+    ytrg.mean = yhat.mean(N+1:end);
 end
 
+if do_var
+    ytrg.var = yhat.var;
+end
 
 
 %%%%%%%%%%
