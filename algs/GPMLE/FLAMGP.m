@@ -23,6 +23,7 @@ function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 %         p - number of proxy points;
 %         only_targs - only compute posterior mean at targets
 %         v - verbose: 0=silent [default], 1=diagnostics incl from FLAM.
+%         no_proxy - don't use the proxy method, use an O(N^2) solver
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -55,6 +56,8 @@ if ~isfield(opts,'occ')
 end
 if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
+do_pxy = true;
+if isfield(opts, 'no_proxy'), do_pxy = false; end
 
 opts.p = 5;
 if opts.v
@@ -95,7 +98,9 @@ clear theta_proxy proxy_;
 
 Afun = @(i,j) Afunflam(i,j,x,ker,sigmasq);
 pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
-%pxyfun = [];
+if ~do_pxy
+    pxyfun = [];
+end
 
 
 % verbose mode?
@@ -126,8 +131,10 @@ if do_trg
    tic;
   Afun_targ = @(i,j) Afunflam_targ(i,j,xtrg,x,ker);
   pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker);
-  %pxyfun_targ = [];
-  
+  if ~do_pxy
+    pxyfun_targ = [];
+  end
+
   if (isfield(opts,'v') && (opts.v == true))
     opts_use = struct('symm','n','verb',verb);
   else
