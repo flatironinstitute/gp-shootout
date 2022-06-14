@@ -26,22 +26,16 @@ nu = 0.5;
 ker = Matern_ker(dim, nu, l, var);
 
 % get accurate solution
-opts.v = true;
-opts.tol = 1e-8;
-[y0, ytrg_true0, info0] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
-opts.tol = 1e-10;
-[y, ytrg_true, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
-save(fullfile(dir, 'matern_2d_true.mat'), 'ytrg_true');
-save(fullfile(dir, 'matern_2d_true0.mat'), 'ytrg_true0');
-save(fullfile(dir, 'matern_2d_x.mat'), 'x');
-save(fullfile(dir, 'matern_2d_meas.mat'), 'meas');
-
-return
+% opts.v = true;
+% opts.tol = 1e-8;
+% [y0, ytrg_true0, info0] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+% opts.tol = 1e-10;
+% [y, ytrg_true, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
+% save(fullfile(dir, 'matern_2d_true.mat'), 'ytrg_true');
+% save(fullfile(dir, 'matern_2d_true0.mat'), 'ytrg_true0');
 
 load(fullfile(dir, 'matern_2d_true.mat'));
 load(fullfile(dir, 'matern_2d_true0.mat'));
-load(fullfile(dir, 'matern_2d_x.mat'));
-load(fullfile(dir, 'matern_2d_meas.mat'));
 fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
 
 
@@ -64,7 +58,7 @@ end
 efgp_2d_matern.ts = ts;
 efgp_2d_matern.rms_errs = rms_errs;
 efgp_2d_matern.linf_errs = linf_errs;
-save('efgp_2d_matern.mat','efgp_2d_matern');
+save(fullfile(dir, 'efgp_2d_matern.mat'), 'efgp_2d_matern');
 
 
 % SKI
@@ -84,7 +78,7 @@ end
 ski_2d_matern.ts = ts;
 ski_2d_matern.rms_errs = rms_errs;
 ski_2d_matern.linf_errs = linf_errs;
-save('ski_2d_matern.mat','ski_2d_matern');
+save(fullfile(dir, 'ski_2d_matern.mat'), 'ski_2d_matern');
 
 
 
@@ -106,18 +100,43 @@ end
 flam_2d_matern.ts = ts;
 flam_2d_matern.rms_errs = rms_errs;
 flam_2d_matern.linf_errs = linf_errs;
-save('flam_2d_matern.mat','flam_2d_matern');
+save(fullfile(dir, 'flam_2d_matern.mat'), 'flam_2d_matern');
+
+
+
+
+%RLCM
+nns = 3;
+ts = zeros(nns, 1);
+linf_errs = zeros(nns, 1);
+rms_errs = zeros(nns, 1);
+for i=1:nns
+    opts.rank = 100 * i;
+    [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrgs, opts);
+    ts(i) = info.cpu_time.total;
+    rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
+    linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
+end
+
+rlcm_2d_matern.ts = ts;
+rlcm_2d_matern.rms_errs = rms_errs;
+rlcm_2d_matern.linf_errs = linf_errs;
+save(fullfile(dir, 'rlcm_2d_matern.mat'), 'rlcm_2d_matern');
+
+
 
 
 
 % plotting
-load("efgp_2d_matern.mat");
-load("ski_2d_matern.mat");
-load("flam_2d_matern.mat");
+load(fullfile(dir, "efgp_2d_matern.mat"));
+load(fullfile(dir, "ski_2d_matern.mat"));
+load(fullfile(dir, "flam_2d_matern.mat"));
+load(fullfile(dir, "rlcm_2d_matern.mat"));
 hold on;
 plot(log10(efgp_2d_matern.rms_errs), log10(efgp_2d_matern.ts), '-o');
 plot(log10(ski_2d_matern.rms_errs), log10(ski_2d_matern.ts), '-o');
 plot(log10(flam_2d_matern.rms_errs), log10(flam_2d_matern.ts), '-o');
+plot(log10(rlcm_2d_matern.rms_errs), log10(rlcm_2d_matern.ts), '-o');
 set ( gca, 'xdir', 'reverse' );
 hold off;
 
@@ -131,3 +150,5 @@ fprintf('\nSKI\n')
 print_tikz(log10(ski_2d_matern.rms_errs), log10(ski_2d_matern.ts))
 fprintf('\nFLAM\n')
 print_tikz(log10(flam_2d_matern.rms_errs), log10(flam_2d_matern.ts))
+fprintf('\nRLCM\n')
+print_tikz(log10(rlcm_2d_matern.rms_errs), log10(rlcm_2d_matern.ts))

@@ -111,22 +111,22 @@ save('flam_1d_matern.mat','flam_1d_matern');
 
 
 
-% % RLCM
-% nns = 4;
-% ts = zeros(nns, 1);
-% linf_errs = zeros(nns, 1);
-% rms_errs = zeros(nns, 1);
-% for i=1:nns
-%     opts.rank = 30 * i;
-%     [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrgs, opts);
-%     ts(i) = info.cpu_time.total;
-%     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
-%     linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
-% end
-% rlcm_1d_matern.ts = ts;
-% rlcm_1d_matern.rms_errs = rms_errs;
-% rlcm_1d_matern.linf_errs = linf_errs;
-% save(fullfile(dir, 'rlcm_1d_matern.mat'), 'rlcm_1d_matern');
+% RLCM
+nns = 4;
+ts = zeros(nns, 1);
+linf_errs = zeros(nns, 1);
+rms_errs = zeros(nns, 1);
+for i=1:nns
+    opts.rank = 30 * i;
+    [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrgs, opts);
+    ts(i) = info.cpu_time.total;
+    rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
+    linf_errs(i) = max(abs(ytrg.mean - ytrg_true.mean));
+end
+rlcm_1d_matern.ts = ts;
+rlcm_1d_matern.rms_errs = rms_errs;
+rlcm_1d_matern.linf_errs = linf_errs;
+save(fullfile(dir, 'rlcm_1d_matern.mat'), 'rlcm_1d_matern');
 
 
 
@@ -135,12 +135,12 @@ save('flam_1d_matern.mat','flam_1d_matern');
 load("efgp_1d_matern.mat");
 load("ski_1d_matern.mat");
 load("flam_1d_matern.mat");
-%load("rlcm_1d_matern.mat");
+load("rlcm_1d_matern.mat");
 hold on;
 plot(log10(efgp_1d_matern.rms_errs), log10(efgp_1d_matern.ts), '-o');
 plot(log10(ski_1d_matern.rms_errs), log10(ski_1d_matern.ts), '-o');
 plot(log10(flam_1d_matern.rms_errs), log10(flam_1d_matern.ts), '-o');
-%plot(log10(rlcm_1d_matern.rms_errs), log10(rlcm_1d_matern.ts), '-o');
+plot(log10(rlcm_1d_matern.rms_errs), log10(rlcm_1d_matern.ts), '-o');
 set ( gca, 'xdir', 'reverse' );
 hold off;
 
@@ -154,5 +154,8 @@ fprintf('\nSKI\n')
 print_tikz(log10(ski_1d_matern.rms_errs), log10(ski_1d_matern.ts))
 fprintf('\nFLAM\n')
 print_tikz(log10(flam_1d_matern.rms_errs), log10(flam_1d_matern.ts))
+fprintf('\nRLCM\n')
+print_tikz(log10(rlcm_1d_matern.rms_errs), log10(rlcm_1d_matern.ts))
+
 
 

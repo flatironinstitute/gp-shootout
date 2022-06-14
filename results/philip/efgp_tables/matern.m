@@ -32,7 +32,7 @@ ntrgs_per_d = 100;
 xtrgs = equispaced_grid(dim, ntrgs_per_d);
 opts.only_trgs = 1;
 
-nns = 5;
+nns = 7;
 for i=1:nns
     N = 10^i;
     % subsample
@@ -80,7 +80,7 @@ ker = Matern_ker(dim, nu, l, var);
 ntrgs_per_d = 100;
 xtrgs = equispaced_grid(dim, ntrgs_per_d);
 
-nns = 5;
+nns = 7;
 for i=1:nns
     N = 10^i;
     % subsample
@@ -121,7 +121,7 @@ ker = Matern_ker(dim, nu, l, var);
 ntrgs_per_d = 100;
 xtrgs = equispaced_grid(dim, ntrgs_per_d);
 
-nns = 5;
+nns = 7;
 for i=1:nns
     N = 10^i;
     % subsample
