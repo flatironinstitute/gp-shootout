@@ -1,9 +1,10 @@
 function ker = Matern_ker(dim, nu, l, var)
 % MATERN_KER   Matern kernel func and Fourier transform, general nu and dim.
 %
-% ker = Matern_ker(dim,nu,l) returns the Matern kernel in general dimension dim,
-%  with various nu parameters, and general lengthscale l (a.k.a. rho).
-%  A struct is returned with at least the fields:
+% ker = Matern_ker(dim,nu,l) returns and object capable of computing the
+%  Matern kernel for a particular dimension dim,
+%  with various nu parameters, and particular lengthscale l (a.k.a. rho).
+%  The returned struct has at least the fields:
 %    k -    a function handle taking an array of distances to kernel values.
 %    khat - a function handle to its d-dim isotropic Fourier transform (mapping
 %           wavevector magnitudes to values).

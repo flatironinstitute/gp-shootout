@@ -1,8 +1,9 @@
 function ker = SE_ker(dim,l,var)
 % SE_KER   Squared-exponential kernel func and Fourier transform, general dim
 %
-% ker = SE_ker(dim,l) returns ker.k a function handle taking an array of
-%  distances to kernel values, and ker.khat, the function handle to its
+% ker = SE_ker(dim,l) returns a struct with fields as functions which evaluate
+%  the S.E. kernel. Namely: ker.k is a function handle taking an array of
+%  distances to kernel values, and ker.khat the function handle to its
 %  Fourier transform (mapping wavevector magnitudes to values).
 %  Latter uses Phillip's convention. For squared-exponential kernel (Gaussian),
 %  l is the distance scale.

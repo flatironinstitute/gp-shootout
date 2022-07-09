@@ -22,8 +22,9 @@ function [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrg, opts)
 %         rank - RLCM matrix block rank param (see paper)
 %         par = 'RAND' or 'PCA' (string), partitioning method.
 %         diageps - diagonal added value for CMatrix construction, eg 1e-8 ?
-%         refine = refine the linear solves? (0 or 1).
+%         refine - refine the linear solves? (0 or 1).
 %         only_trgs - only compute posterior mean at targets
+%         nthreads - how many threads for RLCM executables (default all avail)
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -69,10 +70,12 @@ fclose(fid);
 
 % [x(:,1); meas(1)]   % debug
 
-nthread = 1; %maxNumCompThreads;   % 1 is best but still uses all threads
-             % lots of threads cause terrible slow-down in executable :(
 h = fileparts(mfilename('fullpath'));   % this dir
 dir = [h '/RLCM/app/KRR'];     % app dir of ahb-hacked RLCM executables
+
+if isfield(opts,'nthread')
+  dir = sprintf('OMP_NUM_THREADS=%d %s',opts.nthread,dir);  % for system call
+end
 
 if opts.dense              % toy small-N dense test
   exechead = 'KRR_Standard_basicGP_IO';
@@ -81,6 +84,11 @@ else                       % the real thing: RLCM fast alg for large N
   exechead = 'KRR_RLCM_basicGP_IO';
   methargs = sprintf('%d %d %s %g %d', opts.seed, opts.rank,opts.par, opts.diageps, opts.refine);
 end
+
+% note the following only changes the command args which seems not to affect
+% actual # threads (hence the above hack on dir to control via OMP_NUM_THREADS)
+nthread = 1; %maxNumCompThreads;   % 1 is best but still uses all threads
+             % lots of threads cause terrible slow-down in executable :(
 
 if strcmp(ker.fam,'squared-exponential')  % 2 pars: var, ell (also sigma^2 nugg)
   cmd = sprintf('%s/%s_IsotropicGaussian_DPoint.ex %d %d %s %d %s %s %d %d %.15g %.15g %.15g %s',dir,exechead,nthread,N,filetrain,ntrgs,filextrg,fileypred,dim,opts.verb,ker.l,ker.k(0),sigmasq,methargs);
