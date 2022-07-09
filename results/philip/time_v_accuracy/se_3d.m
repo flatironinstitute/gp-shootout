@@ -93,7 +93,7 @@ save(fullfile(dir, 'rlcm_3d.mat'), 'rlcm_3d');
 
 
 % SKI
-nns = 3;
+nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);

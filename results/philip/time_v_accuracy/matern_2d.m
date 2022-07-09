@@ -67,7 +67,8 @@ ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
-    opts.grid_size = 5^i;
+    fprintf('i: %d\n', i);
+    opts.grid_size = 10^i;
     [y, ytrg, info] = SKI(x, meas, sigmasq, ker, xtrgs, opts);
 
     ts(i) = info.cpu_time.total;

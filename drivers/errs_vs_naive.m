@@ -9,12 +9,12 @@
 %
 % Note: tol is now different for each method, more useful.
 
+clear opts
 N = 5000;        % problem size (small, matching naive, for now)
 l = 0.1;        % SE kernel scale
 sigma = 0.03;    % used to regress (1=easy; 0.01 = ill cond kills EFGP,SKI)
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-
 
 for dim = 1:3
 

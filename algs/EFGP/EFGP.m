@@ -66,13 +66,15 @@ if isfield(opts, 'only_trgs'), xsol = xtrg'; end
 if do_dense
     if dim == 1
         [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
+    elseif dim==2
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp2d_dense(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
     end
 elseif dim==1
   [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
 elseif dim==2
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat.mean, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol); 
 elseif dim==3
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp3d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat.mean, info.iter, cpu_time] = efgp3d(x', meas, sigmasq, ker, opts.tol, xsol); 
 else
   error('dim must be 1,2, or 3!');
 end
@@ -87,6 +89,7 @@ else
     info.cpu_time.cg = cpu_time(2);
 end
 info.cpu_time.mean = cpu_time(3);
+
 
 if isfield(opts, 'only_trgs')
     y.mean = [];

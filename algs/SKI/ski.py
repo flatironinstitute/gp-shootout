@@ -1,14 +1,15 @@
 import time 
 import torch
 import gpytorch
-import numpy as np
 
 
-def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, do_default):
+def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, 
+        do_default):
     """
     GPR: Gaussian process regression via Python wrapper to SKI
 
-    mean, cputime = gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double=True, do_default)
+    mean, cputime = gpr(train_x, train_y, test_x, grid_size, sigma2, 
+    kern_family, l, double, do_default)
     """
 
     train_x = torch.tensor(train_x).double()
@@ -19,8 +20,10 @@ def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, do_
     
     # initialize model for ski
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = gpr_model(train_x, train_y, likelihood, grid_size, kern_family, do_default)
+    model = gpr_model(train_x, train_y, likelihood, grid_size, 
+                      kern_family, do_default)
 
+    # double precision
     if double:
         model.double()
         likelihood.double()
@@ -35,6 +38,7 @@ def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, do_
     model.eval()
     likelihood.eval()
 
+    # evaluate posterior mean
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         tt1 = time.time()
         if double:
@@ -48,7 +52,8 @@ def gpr(train_x, train_y, test_x, grid_size, sigma2, kern_family, l, double, do_
 
 
 class gpr_model(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood, grid_size, kern_family, do_default):
+    def __init__(self, train_x, train_y, likelihood, grid_size, kern_family, 
+                 do_default):
         super(gpr_model, self).__init__(train_x, train_y, likelihood)
 
         # SKI requires a grid size hyperparameter. This util can help with 
@@ -59,6 +64,7 @@ class gpr_model(gpytorch.models.ExactGP):
         if do_default:
             grid_size = gpytorch.utils.grid.choose_grid_size(train_x, 1.0)
         
+        # dimension
         if len(train_x.size()) > 1:
             [_, dim] = train_x.size()
         else:

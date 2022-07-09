@@ -1,5 +1,10 @@
 rng(1);
 sigmatrue = 0.3;  % used to regress
+
+% set directory for loading data and saving results
+dir = "~/gp-shootout/results/philip/efgp_tables/data";
+    %%%%%%%%%%%%%%save(fullfile(dir, filename), 'err_rms')
+
 save('sigmatrue.mat','sigmatrue');
 
 % generate data (x, meas) for 1e7 points in 1, 2, and 3 dimensions

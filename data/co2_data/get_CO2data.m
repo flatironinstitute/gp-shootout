@@ -3,7 +3,7 @@ function [x, meas] = get_CO2data(Nsub)
 %
 % [x, meas] = get_CO2data pulls in data from a C02 data set described
 % here -- https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1419136
-% (see Figure 4).
+% (see Figure 4) -- especially the beginning of section 3.
 %
 % [x, meas] = get_CO2data(Nsub) restricts to a random subset of size Nsub.
 %

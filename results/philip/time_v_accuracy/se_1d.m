@@ -84,13 +84,13 @@ save(fullfile(dir, 'ski_1d.mat'), 'ski_1d');
 
 
 % FLAM
-nns = 7;
+nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 opts.v = true;
 for i=1:nns
-    opts.tol = 1e-8 * 10^(-i);
+    opts.tol = 1e-4 * 10^(-i);
     [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);

@@ -54,12 +54,12 @@ fprintf('rms dd: %g\n', rms(ytrg_true0.mean - ytrg_true.mean));
 
 
 %RLCM
-nns = 4;
+nns = 3;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
-    opts.rank = 10 * i;
+    opts.rank = 100 * i;
     [y, ytrg, info] = RLCM(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
@@ -96,7 +96,7 @@ save(fullfile(dir, 'efgp_2d.mat'), 'efgp_2d');
 %set ( gca, 'xdir', 'reverse' );
 
 % SKI
-nns = 2;
+nns = 3;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
