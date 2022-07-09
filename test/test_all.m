@@ -6,5 +6,14 @@ test_kers
 densekermat
 get_randdata
 naive_gp
-EFGP
-FLAMGP
+try
+    EFGP
+catch
+    fprintf('EFGP not installed successfully\n');
+end
+
+try
+    FLAMGP
+catch
+    fprintf('FLAGMP not installed successfully\n');
+end

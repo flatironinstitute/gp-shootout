@@ -10,7 +10,7 @@ export PATH=$PATH:.
 export SYS=MAC
 
 # Set C++ compiler. Examples: g++ (Linux), g++-8 (Mac).
-export CXX=g++-11
+export CXX=${1:-g++-8}
 
 # Set the use of OPENMP. The C++ compiler typically comes with OPENMP
 # support.
