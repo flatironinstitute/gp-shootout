@@ -47,13 +47,14 @@ if nargin<6, opts = []; end
 if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if ~isfield(opts,'occ')
     if(dim == 1)
-        opts.occ = 20;
+        opts.occ = 200;
     elseif(dim == 2)
-        opts.occ = 100;
+        opts.occ = 200;
     elseif(dim == 3)
         opts.occ = 300;
     end
 end
+fprintf('occupancy=%d\n',opts.occ)
 if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 do_pxy = true;
@@ -69,7 +70,7 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 verb = 1;
 
 if(dim == 1)
-    proxy = linspace(0.1,2.5,opts.p); proxy = [-proxy proxy];  % proxy points
+    proxy = linspace(1.5,2.5,opts.p); proxy = [-proxy proxy];  % proxy points
 elseif(dim == 2)
     theta_proxy = (1:opts.p)*2*pi/opts.p;
     proxy_ = [cos(theta_proxy); sin(theta_proxy)];
