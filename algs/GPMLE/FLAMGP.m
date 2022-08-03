@@ -55,7 +55,7 @@ if ~isfield(opts,'occ')
     end
 end
 fprintf('occupancy=%d\n',opts.occ)
-if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/4))  ; end
+if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/3))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 do_pxy = true;
 if isfield(opts, 'no_proxy'), do_pxy = ~opts.no_proxy; end
