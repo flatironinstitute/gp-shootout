@@ -47,19 +47,20 @@ if nargin<6, opts = []; end
 if ~isfield(opts,'tol'), opts.tol = 1e-6; end     % default
 if ~isfield(opts,'occ')
     if(dim == 1)
-        opts.occ = 20;
+        opts.occ = 200;
     elseif(dim == 2)
-        opts.occ = 100;
+        opts.occ = 200;
     elseif(dim == 3)
         opts.occ = 300;
     end
 end
-if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/2))  ; end
+fprintf('occupancy=%d\n',opts.occ)
+if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/3))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 do_pxy = true;
-if isfield(opts, 'no_proxy'), do_pxy = false; end
+if isfield(opts, 'no_proxy'), do_pxy = ~opts.no_proxy; end
 
-opts.p = 5;
+%opts.p = 5;
 if opts.v
   fprintf('FLAMGP start: p = %d\n',opts.p);
 end
@@ -68,15 +69,18 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 
 verb = 1;
 
+scale = ker.l;
+R = 3.0*scale;
 if(dim == 1)
-    proxy = linspace(0.1,2.5,opts.p); proxy = [-proxy proxy];  % proxy points
+    proxy = linspace(0,R,opts.p); proxy = [-proxy proxy];  % proxy points
+    shift = 1.5*sign(proxy);
 elseif(dim == 2)
     theta_proxy = (1:opts.p)*2*pi/opts.p;
     proxy_ = [cos(theta_proxy); sin(theta_proxy)];
-    proxy = [];
-    for r = linspace(1.5,2.5,opts.p)        % mysterious shells
-     proxy = [proxy r*proxy_];
-    end
+    proxy_ = proxy_./max(abs(proxy_));
+    proxy = reshape(proxy_(:)*linspace(0,R,opts.p),2,...
+      opts.p,opts.p);
+    shift = 1.5*proxy_;
 elseif (dim == 3)
     theta_proxy = (1:opts.p)*pi/opts.p;
     phi_proxy = (1:opts.p)*2*pi/opts.p;
@@ -84,12 +88,10 @@ elseif (dim == 3)
     tt = tt(:)';
     pp = pp(:)';
     proxy_ = [sin(tt).*cos(pp); sin(tt).*sin(pp); cos(tt)];
-    proxy = [];
-    for r = linspace(1.5,2.5,opts.p)        % mysterious shells
-     proxy = [proxy r*proxy_];
-    end
-        
-    
+    proxy_ = proxy_./max(abs(proxy_));
+    proxy = reshape(proxy_(:)*linspace(0,R,opts.p),3,opts.p,opts.p,opts.p);
+    proxy_ = reshape(proxy_,3,opts.p,opts.p);
+    shift = 1.5*proxy_;   
 else
   error('dim>3 not implemented!');
 end
@@ -97,7 +99,7 @@ end
 clear theta_proxy proxy_;
 
 Afun = @(i,j) Afunflam(i,j,x,ker,sigmasq);
-pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,ker);
+pxyfun = @(x,slf,nbr,l,ctr) pxyfunflam(x,slf,nbr,l,ctr,proxy,shift,ker);
 if ~do_pxy
     pxyfun = [];
 end
@@ -130,7 +132,7 @@ ytrg = [];
 if do_trg
    tic;
   Afun_targ = @(i,j) Afunflam_targ(i,j,xtrg,x,ker);
-  pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker);
+  pxyfun_targ = @(rc,xtrg,x,slf,nbr,l,ctr) pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,shift,ker);
   if ~do_pxy
     pxyfun_targ = [];
   end
@@ -162,11 +164,11 @@ l = 0.1;        % SE kernel scale
 sigma = 0.5;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-9;      % chol err if too big :(
+opts.tol = 1e-7;      % chol err if too big :(
 opts.v = 1;
 
 
-for dim = 3:3   % ..........
+for dim = 1:1   % ..........
   fprintf('\ntest FLAMGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
@@ -175,6 +177,7 @@ for dim = 3:3   % ..........
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   xtrg = rand(dim,N);
   ker = SE_ker(dim,l);
+  %ker = Matern_ker(dim,0.5,l);
   [y, ytrg, info] = FLAMGP(x, meas, sigma^2, ker, xtrg, opts);
   % run O(n^3) naive gp regression
   [ytrue, ytrg_true, ~] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);

@@ -35,7 +35,6 @@ directory (which will execute `startup`), then within MATLAB type `test_all`.
 Advanced: to build then test all wrapped non-MATLAB methods:
 
 1) make sure you can call python from matlab, eg via `py.sys.version`
-2) from shell do `(cd algs/RLCM; ./buildit.sh)`
 
 then from MATLAB run `test_all_nonmatlab`.
 
@@ -52,13 +51,13 @@ to do: minimally complete example...
 
 ### To do
 
-* add Matern to RLCM (it's SE only so far)
-* FLAMGP in 3D
 * insert switch from EFGP to SSGP w/ same xi quad nodes.
 * explore EFGP accel via padding fftn to powers of only 2,3,5.
 * other top-level fig-generating driver scripts
 * understand empirical error breakdown as sigma->0 at large N
 * understand CG num iters growing like 1/sqrt(tol)
+* Update FLAMGP proxy setting to updated version proposed by Ken Ho
+* Move EFGP to a different repository and include it as a submodule
 
 
 ### Done (CHANGELOG)
@@ -79,3 +78,5 @@ to do: minimally complete example...
 * switched matlab pyenv engine setting to OutOfProcess to prevent crashes
 * SKI fixed mem alloc problem
 * protect from annoying FLAM chol fail if tol too large
+* add Matern to RLCM (it's SE only so far)
+* FLAMGP in 3D

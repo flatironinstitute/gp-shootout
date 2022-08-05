@@ -1,5 +1,5 @@
-function [Kpxy,nbr] = pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,ker)
-  pxy = proxy.*l + ctr;  % scale and translate reference points
+function [Kpxy,nbr] = pxyfunflam_targ(rc,xtrg,x,slf,nbr,l,ctr,proxy,shift,ker)
+  pxy = proxy + shift.*l + ctr;  % scale and translate reference points
   if rc == 'r'
       Kpxy = densekermat(ker.k,xtrg(:,slf),pxy);
       dr = x(:,nbr)-ctr;
