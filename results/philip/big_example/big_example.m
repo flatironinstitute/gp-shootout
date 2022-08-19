@@ -1,7 +1,7 @@
 rng(1);
 
 % set directory for loading data and saving results
-dir = "~/gp-shootout/results/philip/big_example/data";
+dir = "~/ceph/gp-shootout/big_example/data";
 load(fullfile(dir, 'sigmatrue.mat'));
 
 % set tolerances and make sure we only evaluate posterior mean at trgs
@@ -11,13 +11,25 @@ opts2d_true.tol = 1e-6;
 opts2d_true.only_trgs = true;
 
 % load data
-load(fullfile(dir, 'x_2d.mat'));
-load(fullfile(dir, 'meas_2d.mat'));
+N0 = 1e9;
+
+fid = fopen(fullfile(dir,'meas_2d.bin'),'r');
+tic,
+meas = fread(fid,[N0,1],'double');
+toc;
+fclose(fid);
+
+fid = fopen(fullfile(dir,'x_2d.bin'),'r');
+tic,
+x = fread(fid,[2,N0],'double');
+toc;
+fclose(fid);
+
 
 % subsample data
-N = 3e8;
-meas = meas(1:N);
-x = x(:,1:N);
+N = N0;
+% meas = meas0(1:N);
+% x = x0(:,1:N);
 
 % gp regression
 dim = 2;
