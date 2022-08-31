@@ -9,7 +9,7 @@ iflam = 0;
 irlcm = 0;
 igpytorch = 0;
 
-str = which('finufft1d1');
+str = which('finufft');   % checks the MEX file, not the matlab wrappers
 if(~isempty(str))
    iefgp = 1;
 end
