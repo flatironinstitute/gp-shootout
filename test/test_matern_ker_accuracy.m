@@ -3,23 +3,24 @@
 % Manas Rachh; Alex Barnett attempting nu.neq.0.5 improvements 8/31/22
 
 clear
-nu = 0.5;
-l = 0.1;   % try down to 0.03, smaller = better for trunc err assessment
+nu = 2.5;
+l = 0.01;   % try down to 0.03, smaller = better for trunc err assessment
 dim = 1;
-var = 1;
-eps = 1e-10;
+var = 1;  % always
 ker = Matern_ker(dim,nu,l,var);
-%h = 1/(1+l*sqrt(2*dim)*nu*log(dim*3^dim/eps));
+eps = 1e-8;
+%h = 1/(1+l*sqrt(2*dim/nu)*log(dim*3^dim/eps));   % fixed from Cor 9.
+h = 1/(1+0.7*l/sqrt(nu)*log(1/eps));   % alex ok heuristic for aliasing
 %h = h/2;            % why? make sure h-converged, so trunc error dominates.
-h = 1/(1+15*l/sqrt(nu));   % alex heuristic for <1e-7 aliasing, all nu<=2.5.
-aliaserr = ker.k(1/h-1);   % nearest image
-fprintf('h=%.3g, estim aliasing err = %.3g\n',h,aliaserr)
+
+aliaserr = ker.k(1/h-1);   % nearest image (good unif err estim)
+fprintf('h=%.3g, estim max aliasing err = %.3g\n',h,aliaserr)
 
 nleg = 300;         % seems to build spectral 2-panel quadr over [-1,1]
 [xleg,wleg] = legpts(nleg);
 xleguse = [-1+(xleg+1)/2; (xleg+1)/2];
-wleguse = [wleg/2; wleg/2];
-
+wleguse = [wleg/2, wleg/2];
+wleguse = (1 - abs(xleguse.')).*wleguse;  % apply top-hat weight: conv(rho,rho)
 
 if(dim == 2)
 
@@ -42,11 +43,17 @@ elseif(dim == 1)
    rr = abs(xq);
 end
 
-fprintf('quadrature over [-1,1]^d test error: %.3g\n',abs(sum(wq)-2^dim))
+fprintf('tri-hat wei quadr over [-1,1]^d test error: %.3g\n',abs(sum(wq)-1))
 
 kvals = ker.k(rr);
 
-ifac = 1:0.25:3;
+if dim==1
+  ifac = 1:0.25:5;
+elseif dim==2
+  ifac = 1:0.25:3;
+elseif dim==3
+  ifac = 0.6:0.2:2;
+end
 mms = floor(10.^(ifac));
 
 errs = zeros(size(mms));
