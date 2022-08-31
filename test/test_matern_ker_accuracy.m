@@ -4,7 +4,7 @@
 
 clear
 nu = 0.5;
-l = 0.1;   % try down to 0.03, smaller = better for trunc err assessment
+l = 0.2;   % try down to 0.03, smaller = better for trunc err assessment
 dim = 3;
 var = 1;  % always
 ker = Matern_ker(dim,nu,l,var);
@@ -116,7 +116,7 @@ end
 % clf()
 % hh = pcolor(x,y,abs(cvals2)); 
 % set(hh,'EdgeColor','none');    
-% colorb/ar();
+% colorbar();
 
 figure(3)
 clf
