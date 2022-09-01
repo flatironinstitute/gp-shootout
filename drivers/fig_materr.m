@@ -3,14 +3,14 @@
 % Barnett 8/31/22 based on Rachh.
 clear
 
-eps = 1e-6;  % targ aliasing err to control h
+eps = 1e-8;  % targ aliasing err to control h
 var = 1;  % always
 
 figure;
 for dim=[1 2 3]
   fprintf('dim=%d...\n',dim); subplot(1,3,dim);
-  nuu = [0.5 2.5]; %[0.5 1.5 2.5];  % nu values to test
-  colors = 'kr';
+  nuu = [0.5 1.5 2.5];  % nu values to test
+  colors = 'krg';
   for j=1:numel(nuu), nu = nuu(j); color = colors(j);
     ll = [0.02 0.2];   % ell values to test
     marks = 'o+';
@@ -18,35 +18,50 @@ for dim=[1 2 3]
       
       ker = Matern_ker(dim,nu,l,var);
 
-      h = 1/(1+0.7*l/sqrt(nu)*log(1/eps));   % alex ok heuristic for aliasing
+      h = 1/(1+0.85*l/sqrt(nu)*log(1/eps));   % alex ok heuristic for aliasing
   
       aliaserr = ker.k(1/h-1);   % nearest image (good unif err estim)
       fprintf('\tnu=%.3g\tl=%.3g\th=%.3g\t(est max alias err=%.3g)\n',nu,l,h,aliaserr)
       
       % go up to N=1e6 modes total
       if dim==1, ifac = 1:0.5:6;
-      elseif dim==2, ifac = 1:0.25:3;
-      elseif dim==3, ifac = 0.6:0.2:2;
+      elseif dim==2, ifac = 1:0.25:3.25;  % for faster, only go to 3
+      elseif dim==3, ifac = 0.8:0.2:2.2;   % for faster, only go to 1.8
       end
       mms = floor(10.^(ifac));
       
       errs = materr_vs_m(ker,mms, h, 1e-2*eps);    % meas L2 error (NUFFT+quadr)
       ph(i,j) = loglog(mms,errs,[color mark '-'],'MarkerSize',10); hold on;
-      legstr{i,j} = sprintf('$\\nu=%g, \\ell=%g$',nu,l);
-      
-      rfac = nu^(nu-1)/2^(nu)/pi^(dim/2+2*nu)*gamma(nu+0.5)/gamma(nu);
+      legstr{i,j} = sprintf('$\\nu=%g,\\; \\ell=%g$',nu,l);  % note \ esc char
+
+      % m-power:ok. l-power:ok. nu=1/2 heur needs prefac/=3.
+      % nu=5/2 needs prefac*=3^{(d-1)/2} etc.
+      %rfac = nu^(nu-1)/2^(nu)/pi^(dim/2+2*nu)*gamma(nu+0.5)/gamma(nu);
+      rfac = 0.15/pi^(nu+dim/2);   %-(nu-1/2)*(dim-1)/4);  % no dim-dep
       errs_heur = rfac ./ (h*mms).^(2*nu+dim/2) ./ l^(2*nu);
       loglog(mms,errs_heur,[color mark '--'],'MarkerSize',5);
       %title(sprintf('test Matern ker accuracy: d=%d, nu=%g, ell=%g, h=%g',dim,nu,l,h))
       %hline(aliaserr,'g','estim alias err')
     end
   end
-  xlabel('m');
+  xlabel('$m$','interpreter','latex');
   ylabel('RMS error in $\tilde{k}$','interpreter','latex');
   axis tight; v = axis; axis([v(1:2) 0.1*eps 1]);   % clip vertical domain
   legend(ph(:),legstr{:},'interpreter','latex');
   title(sprintf('Matern, d=%d',dim))
 end
+
+set(gcf,'paperposition',[0 0 14 4])
+print -dpng ../results/alex/fig_materr.png
+% pdf is a pain
+
+
+% check inversion formula to pick m:
+m_heur = ( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h;
+err_heur = rfac ./ (h*m_heur).^(2*nu+dim/2) ./ l^(2*nu);
+fprintf('check m_heuristic, should match: %g %g\n',eps,err_heur)
+
+
 
 %%%%%%%%%%%%
 function errs = materr_vs_m(ker,mms, h, epsnufft)
@@ -57,6 +72,7 @@ function errs = materr_vs_m(ker,mms, h, epsnufft)
   %          mms = list of m values to test
   %          h = quad spacing in xi, using exp(2pi.i.x.xi) convention.
   %          epsnufft = NUFFT tolerance
+  % Note: this repackages ../test/test_matern_ker_accuracy.m
 
   dim = ker.dim; nu =ker.nu; l = ker.l; % get stuff out of ker object
   if dim==1      % we guess enough to capture small-l behavior
@@ -64,7 +80,7 @@ function errs = materr_vs_m(ker,mms, h, epsnufft)
   elseif dim==2
     nleg = 100;
   elseif dim==3
-    nleg = 30;
+    nleg = 50;
   end
   % seems to build spectral 2-panel quadr over [-1,1]
   [xleg,wleg] = legpts(nleg);
