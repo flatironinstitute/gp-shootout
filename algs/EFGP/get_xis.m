@@ -1,4 +1,4 @@
-function [xis, h, m] = get_xis(ker, eps, L)
+function [xis, h, m] = get_xis(ker, eps, L, opts)
 % GET_XIS   Return 1D equispaced Fourier quadrature nodes for given tolerance
 %
 % xis = get_xis(ker, eps, L) returns an equispaced list of 1D frequency nodes
@@ -11,6 +11,9 @@ function [xis, h, m] = get_xis(ker, eps, L)
 %   eps   - tolerance parameter, eg 1e-6
 %   L     - max size of spatial domain in any coordinate, so that all
 %           inter-point differences lie in [-L,L].
+%  opts   - Optional arguments with default values in parenthesis
+%              opts.use_integral (false), use the integral estimate
+%               heuristic by philip
 %  Output:
 %   xis   - row-vector of equispaced values to be used as quadrature nodes
 %           (all weights in 1D are h=xis(2)-xis(1)).  Their number is odd.
@@ -24,21 +27,57 @@ function [xis, h, m] = get_xis(ker, eps, L)
 %
 % To test, see EFGP.
   
+  use_integral = false;
+  if(nargin == 3)
+      opts = [];
+  end
+  if(isfield(opts,'use_integral'))
+      use_integral = opts.use_integral;
+  end
   dim = ker.dim;              % spatial dimension
   
   % spatial radial ker func
   k = ker.k;
-  Ltime = getL(eps, k);       % find eps-support
-  h = 1/(L+Ltime);            % xi node spacing so nearest aliased tail <= eps
-  % (NB Nyquist was hnyq = 1/(2*Ltime), more pessimistic)
-  
-  % Fourier radial ker func
   khat = ker.khat;
-  %%%khat = @(r) ker.khat(r) / ker.khat(0);         % some old version w/o polar
-  khat = @(r) abs(r^(dim-1)) * khat(r) / khat(0);   % polar factor & rel to 0
-  Lfreq = getL(eps, khat);    % find eps-support
-    
-  hm = ceil(Lfreq/h);         % half number of nodes to cover [-Lfreq,Lfreq]
+ 
+  
+  if(use_integral)
+  
+      Ltime = getL(eps, k);       % find eps-support
+      h = 1/(L+Ltime);            % xi node spacing so nearest aliased tail <= eps
+      % (NB Nyquist was hnyq = 1/(2*Ltime), more pessimistic)
+
+      % Fourier radial ker func
+
+      %%%khat = @(r) ker.khat(r) / ker.khat(0);         % some old version w/o polar
+      khat = @(r) abs(r^(dim-1)) * khat(r) / khat(0);   % polar factor & rel to 0
+      Lfreq = getL(eps, khat);    % find eps-support
+
+      hm = ceil(Lfreq/h);         % half number of nodes to cover [-Lfreq,Lfreq]
+  else
+      if(contains(ker.fam,'matern'))
+          l = ker.l;
+          nu = ker.nu;
+          dim = ker.dim;
+          if(isfield(opts,'l2scaled')) 
+             if(opts.l2scaled)
+               rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);
+               eps = eps*sqrt(rl2sq);
+             end
+          end
+          h = 1/(L+0.85*l/sqrt(ker.nu)*log(1/eps));
+          hm = ceil(( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h);
+          
+      elseif(strcmpi(ker.fam,'squared-exponential'))
+          l = ker.l;
+          dim = ker.dim;
+          var = ker.var;
+          h = 1/(L+l*sqrt(2*log(4*dim*3^dim/eps/var)));
+          hm = ceil(sqrt(log(dim*(4^(dim+1))/eps/var)/2)/pi/l/h);
+      end
+  end
+  
+  
   xis = (-hm:hm)*h;           % use exactly h, so may have bit of spillover
   m = numel(xis);
 end

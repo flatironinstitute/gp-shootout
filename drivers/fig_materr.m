@@ -6,8 +6,23 @@ clear
 eps = 1e-8;  % targ aliasing err to control h
 var = 1;  % always
 
-figure;
+errs_all = cell(3,3,2);
+errs_rel_all = cell(3,3,2);
+
+errs_heur_all = cell(3,3,2);
+errs_rel_heur_all = cell(3,3,2);
+rl2sq_all = cell(3,3,2);
+
+figure(1);
+clf
+hold on;
+figure(2);
+clf
+hold on;
 for dim=[1 2 3]
+  figure(1)  
+  fprintf('dim=%d...\n',dim); subplot(1,3,dim);
+  figure(2)  
   fprintf('dim=%d...\n',dim); subplot(1,3,dim);
   nuu = [0.5 1.5 2.5];  % nu values to test
   colors = 'krg';
@@ -25,12 +40,15 @@ for dim=[1 2 3]
       
       % go up to N=1e6 modes total
       if dim==1, ifac = 1:0.5:6;
-      elseif dim==2, ifac = 1:0.25:3.25;  % for faster, only go to 3
-      elseif dim==3, ifac = 0.8:0.2:2.2;   % for faster, only go to 1.8
+      elseif dim==2, ifac = 1:0.25:3;  % for faster, only go to 3
+      elseif dim==3, ifac = 0.8:0.2:1.8;   % for faster, only go to 1.8
       end
       mms = floor(10.^(ifac));
       
-      errs = materr_vs_m(ker,mms, h, 1e-2*eps);    % meas L2 error (NUFFT+quadr)
+      [errs,errs_rel] = materr_vs_m(ker,mms, h, 1e-2*eps);    % meas L2 error (NUFFT+quadr)
+      errs_all{dim,j,i} = errs;
+      errs_rel_all{dim,j,i} = errs_rel;
+      figure(1)
       ph(i,j) = loglog(mms,errs,[color mark '-'],'MarkerSize',10); hold on;
       legstr{i,j} = sprintf('$\\nu=%g,\\; \\ell=%g$',nu,l);  % note \ esc char
 
@@ -39,15 +57,35 @@ for dim=[1 2 3]
       %rfac = nu^(nu-1)/2^(nu)/pi^(dim/2+2*nu)*gamma(nu+0.5)/gamma(nu);
       rfac = 0.15/pi^(nu+dim/2);   %-(nu-1/2)*(dim-1)/4);  % no dim-dep
       errs_heur = rfac ./ (h*mms).^(2*nu+dim/2) ./ l^(2*nu);
+      errs_heur_all{dim,j,i} = errs_heur;
       loglog(mms,errs_heur,[color mark '--'],'MarkerSize',5);
+      
+      figure(2)
+      ph2(i,j) = loglog(mms,errs_rel,[color mark '-'],'MarkerSize',10); hold on;
+      legstr2{i,j} = sprintf('$\\nu=%g,\\; \\ell=%g$',nu,l);  % note \ esc char
+      
+      rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);
+      rl2sq_all{dim,j,i} = rl2sq;
+      errs_heur = rfac/sqrt(rl2sq)./ (h*mms).^(2*nu+dim/2) ./ l^(2*nu);
+      errs_rel_heur_all{dim,j,i} = errs_heur;
+      loglog(mms,errs_heur,[color mark '--'],'MarkerSize',5);
+      
       %title(sprintf('test Matern ker accuracy: d=%d, nu=%g, ell=%g, h=%g',dim,nu,l,h))
       %hline(aliaserr,'g','estim alias err')
     end
   end
+  figure(1)
   xlabel('$m$','interpreter','latex');
   ylabel('RMS error in $\tilde{k}$','interpreter','latex');
   axis tight; v = axis; axis([v(1:2) 0.1*eps 1]);   % clip vertical domain
   legend(ph(:),legstr{:},'interpreter','latex');
+  title(sprintf('Matern, d=%d',dim))
+  
+  figure(2)
+  xlabel('$m$','interpreter','latex');
+  ylabel('relative L2 error in $\tilde{k}$','interpreter','latex');
+  axis tight; v = axis; axis([v(1:2) 0.1*eps 1]);   % clip vertical domain
+  legend(ph2(:),legstr2{:},'interpreter','latex');
   title(sprintf('Matern, d=%d',dim))
 end
 
@@ -64,7 +102,7 @@ fprintf('check m_heuristic, should match: %g %g\n',eps,err_heur)
 
 
 %%%%%%%%%%%%
-function errs = materr_vs_m(ker,mms, h, epsnufft)
+function [errs_abs,errs_rel] = materr_vs_m(ker,mms, h, epsnufft)
   % use quadrature to estimate expected rms Matern matrix element approx err
   % via pointy-hat weighted single integral over [-1,1]^d, which in turn equals
   % the double integral of |kapprox - k|^2 over [0,1]^d cross itself.
@@ -119,7 +157,8 @@ function errs = materr_vs_m(ker,mms, h, epsnufft)
   
   kvals = ker.k(rr);
 
-  errs = zeros(size(mms));
+  errs_abs = zeros(size(mms));
+  errs_rel = zeros(size(mms));
   for i=1:length(mms)
     mmax = mms(i);
     xis = -mmax:1:mmax;
@@ -138,7 +177,7 @@ function errs = materr_vs_m(ker,mms, h, epsnufft)
     % Now evaluate truncated fourier approximation
     fvals = ker.khat(xisr);
 
-    epsfudge = 1e-2;
+    
     if(dim == 1)
       cvals = h^(dim)*finufft1d2(xuse,1,epsnufft,fvals);
     elseif(dim == 2)
@@ -146,8 +185,8 @@ function errs = materr_vs_m(ker,mms, h, epsnufft)
     elseif(dim == 3)
       cvals = h^(dim)*finufft3d2(xuse,yuse,zuse,1,epsnufft,fvals);
     end
-
-    errs(i) = sqrt(sum((kvals-real(cvals)).^2.*wq));
+    errs_abs(i) = sqrt(sum((kvals-real(cvals)).^2.*wq));
+    errs_rel(i) = sqrt(sum((kvals-real(cvals)).^2.*wq))./sqrt(sum(kvals.^2.*wq));
 end
 end  %%%%%%%%%%
 
