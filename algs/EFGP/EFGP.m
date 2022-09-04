@@ -24,6 +24,13 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 %         dense - use a (usually) slower dense linear solve instead of the
 %         iterative solver
 %         only_trgs - only compute posterior mean at targets
+%         cg_tol_fac - cg tolerance will be set to tol/cg_tol_fac, default
+%         value 1;
+%         use_integral - whether to use old tail integral estimates for
+%         determining h,m
+%         l2scaled - whether to use l2 scaling of integral with new
+%         heuristics in determining h,m
+%         get_var - compute posterior variance as well
 %
 % Outputs:
 %  y - struct with fields of regression results corresp to given data points x:
@@ -48,7 +55,10 @@ function [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrg, opts)
 
 if nargin==0, test_EFGP; return; end
 if nargin<5, xtrg = []; end
-do_var = (nargin>=5 && ~isempty(opts) && isfield(opts,'get_var'));
+do_var = false;
+if(isfield(opts,'get_var'))
+    do_var = opts.get_var;
+end
 do_trg = ~isempty(xtrg);
 do_dense = false;
 if (isfield(opts, 'dense') && (opts.dense == true)), do_dense = true; end
@@ -65,16 +75,16 @@ if isfield(opts, 'only_trgs'), xsol = xtrg'; end
 
 if do_dense
     if dim == 1
-        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp1d_dense(x', meas, sigmasq, ker, opts.tol, xsol, opts);
     elseif dim==2
-        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp2d_dense(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
+        [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp2d_dense(x', meas, sigmasq, ker, opts.tol, xsol, opts);
     end
 elseif dim==1
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, do_var);
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, opts);
 elseif dim==2
-  [info.beta, info.xis, yhat.mean, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol, opts); 
 elseif dim==3
-  [info.beta, info.xis, yhat.mean, info.iter, cpu_time] = efgp3d(x', meas, sigmasq, ker, opts.tol, xsol); 
+  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp3d(x', meas, sigmasq, ker, opts.tol, xsol, opts); 
 else
   error('dim must be 1,2, or 3!');
 end
@@ -111,10 +121,12 @@ l = 0.1;        % SE kernel scale rel to domain [0,1]^dim, ie hardness of prob
 sigma = 0.3;    % used to regress
 sigmadata = sigma;   % meas noise, consistent case
 freqdata = 3.0;   % how oscillatory underlying func? freq >> 0.3/l misspecified
-opts.tol = 1e-8;
+opts = [];
+opts.tol = 1e-3;
+opts.l2scaled = true;
 L = 50.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 
-for dim = 1:3   % ..........
+for dim = 2:2   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec
@@ -122,7 +134,9 @@ for dim = 1:3   % ..........
   rng(1); % set seed
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);    % x in [0,1]^dim
   x = L*x + (2*rand(dim,1)-1)*shift;                           % scale & shift
-  ker = SE_ker(dim,L*l);             % note L also scales kernel length here
+  ker = SE_ker(dim,L*l);  
+  
+  % note L also scales kernel length here
   [y, ~, info] = EFGP(x, meas, sigma^2, ker, [], opts);
   % run O(n^3) naive gp regression
   [ytrue, ytrg, ~] = naive_gp(x, meas, sigma^2, ker, [], opts);

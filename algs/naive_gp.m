@@ -35,7 +35,10 @@ function [y, ytrg, info] = naive_gp(x, meas, sigmasq, ker, xtrg, opts)
 % If called without arguments, does a self-test
 if nargin==0, test_naive_gp; return; end
 do_trg = (nargin>=5 && ~isempty(xtrg));
-do_var = (nargin>=5 && ~isempty(opts) && isfield(opts,'get_var'));
+do_var = false;
+if(isfield(opts,'get_var'))
+    do_var = opts.get_var;
+end
 [dim,N] = size(x);
 if numel(meas)~=N, error('sizes of meas and x must match!'); end
 if N>1e4, warning('N getting too big for naive method!'); end

@@ -48,3 +48,4 @@ ker.khat = @(xid) var*scaling * (2*nu/l^2 + (4*pi^2) * xid.^2).^(-(nu + dim/2));
 ker.l = l;
 ker.nu = nu;
 ker.dim = dim;
+ker.var = var;

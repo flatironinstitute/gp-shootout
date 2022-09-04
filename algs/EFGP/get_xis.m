@@ -39,6 +39,7 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
   % spatial radial ker func
   k = ker.k;
   khat = ker.khat;
+  eps_use = eps;
  
   
   if(use_integral)
@@ -59,12 +60,15 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
           l = ker.l;
           nu = ker.nu;
           dim = ker.dim;
+          eps_use = eps/ker.var;
           if(isfield(opts,'l2scaled')) 
              if(opts.l2scaled)
                rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);
-               eps = eps*sqrt(rl2sq);
+               eps_use = eps*sqrt(rl2sq);
              end
           end
+
+          eps = eps_use;
           h = 1/(L+0.85*l/sqrt(ker.nu)*log(1/eps));
           hm = ceil(( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h);
           
@@ -72,8 +76,16 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
           l = ker.l;
           dim = ker.dim;
           var = ker.var;
-          h = 1/(L+l*sqrt(2*log(4*dim*3^dim/eps/var)));
-          hm = ceil(sqrt(log(dim*(4^(dim+1))/eps/var)/2)/pi/l/h);
+          eps_use = eps/var;
+          if(isfield(opts,'l2scaled'))
+             if(opts.l2scaled)
+               rl2sq = ker.k(0)^2*(sqrt(pi)*l^2)^dim;
+               eps_use = eps*sqrt(rl2sq);
+             end
+          end
+          eps = eps_use;
+          h = 1/(L+l*sqrt(2*log(4*dim*3^dim/eps)));
+          hm = ceil(sqrt(log(dim*(4^(dim+1))/eps)/2)/pi/l/h);
       end
   end
   

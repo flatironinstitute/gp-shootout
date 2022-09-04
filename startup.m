@@ -26,10 +26,6 @@ end
 % end
 
 % access all of local tree
-h = fileparts(mfilename('fullpath'));
-addpath(genpath(h))                        % gives access to all subdirs
-rmpath(genpath(fullfile(h,'.git')))
-
 % try prevent Py crashes at cost of performance...
 % see: https://www.mathworks.com/matlabcentral/answers/486171-how-do-i-troubleshoot-a-matlab-crash-when-trying-to-use-the-python-interface?s_cid=pl_crsh_an
 
@@ -95,6 +91,10 @@ if(igpp && (ismac || isunix))
     end
 end
     
+
+h = fileparts(mfilename('fullpath'));
+addpath(genpath(h))                        % gives access to all subdirs
+rmpath(genpath(fullfile(h,'.git')))
 
 % terminal style
 format long g

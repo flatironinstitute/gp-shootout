@@ -1,4 +1,4 @@
-function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xsol)
+function [beta, xis, ytrg, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xsol,opts)
 % EFGP3D   equispaced Fourier NUFFT-based GP regression in 3D
 %
 % [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xsol)
@@ -15,6 +15,13 @@ function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xs
 % eps - truncate covariance kernel in time and Fourier domains when values
 %         of functions reach eps
 % xsol - n*3 location coords at which to evaluate posterior mean
+% opts - [optional] struct controlling method params including:
+%         cg_tol_fac - cg tolerance will be set to tol/cg_tol_fac, default
+%         value 1;
+%         use_integral - whether to use old tail integral estimates for
+%         determining h,m
+%         l2scaled - whether to use l2 scaling of integral with new
+%         heuristics in determining h,m
 %
 % Outputs:
 % beta - vector of Fourier basis weights (not really for the user)
@@ -27,10 +34,12 @@ function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xs
 
 % Note: no attempt to exploit cuboid box done; enclosing cube used for L
 
+  if(nargin == 6), opts = []; end
   tic_precomp = tic;
   x0 = min(x); x1 = max(x);   % both row 2-vectors
   L = max(x1-x0);    % worst-axis domain length *** could check xsol too?
-  [xis, h, m] = get_xis(ker, eps, L);
+  
+  [xis, h, m] = get_xis(ker, eps, L,opts);
   [xis_xx, xis_yy, xis_zz] = ndgrid(xis,xis,xis);        % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec
@@ -56,7 +65,11 @@ function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xs
     
     % solve linear system
     tic_cg = tic; 
-    cgtol = eps;                  % I find ok; NB was eps/10, vs eps in dim=1,2
+    cg_tol_fac = 1;
+    if(isfield(opts,'cg_tol_fac'))
+        cg_tol_fac = opts.cg_tol_fac;
+    end
+    cgtol = eps/cg_tol_fac;
     [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, 3*m^3);
     t_cg = toc(tic_cg);
 
@@ -65,7 +78,7 @@ function [beta, xis, yhat, iter, time_info] = efgp3d(x, y, sigmasq, ker, eps, xs
     wsbeta = ws .* reshape(beta, [m, m, m]);
     isign = +1;
     yhat = finufft3d2(tphxsol(:,1),tphxsol(:,2),tphxsol(:,3), isign, nuffttol, wsbeta);
-    yhat = real(yhat);
+    ytrg.mean = real(yhat);
     t_post = toc(tic_post);
 
     % package times for output

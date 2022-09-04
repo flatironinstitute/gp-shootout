@@ -23,3 +23,4 @@ ker.khat = @(xid) var*(2*pi*l^2)^(dim/2) * exp( (-2*pi^2*l^2) * xid.^2);  % |xi|
 ker.fam = 'squared-exponential';
 ker.l = l;
 ker.dim = dim;
+ker.var = var;

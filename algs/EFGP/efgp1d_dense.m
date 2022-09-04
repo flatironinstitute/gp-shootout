@@ -1,4 +1,4 @@
-function [beta, xis, ytrg, time_info, A, X, ws] = efgp1d_dense(x, y, sigmasq, ker, eps, xsol, do_var)
+function [beta, xis, ytrg, time_info, A, X, ws] = efgp1d_dense(x, y, sigmasq, ker, eps, xsol, opts)
 % FUNCTION_SPACE1D_DENSE   equispaced Fourier GP regression in 1D by
 % constructing the matrix of the linear system and doing a dense solve. 
 %
@@ -27,6 +27,7 @@ function [beta, xis, ytrg, time_info, A, X, ws] = efgp1d_dense(x, y, sigmasq, ke
 %
 % To test this routine see: EFGP
   
+    if(nargin == 6), opts = []; end
     k = ker.k; khat = ker.khat;  % get functions, new kernel format
     N = numel(y);
     
@@ -56,6 +57,10 @@ function [beta, xis, ytrg, time_info, A, X, ws] = efgp1d_dense(x, y, sigmasq, ke
     % the the diagonal of F C^{-1} F' where C is the posterior covariance
     % matrix and F is the matrix of basis functions (complex exponentials)
     % tabulated at target points
+    do_var = false;
+    if(isfield(opts,'get_var'))
+        do_var = opts.get_var;
+    end
     if do_var
         nsol = numel(xsol);
         ytrg.var = zeros(nsol, 1);

@@ -1,4 +1,4 @@
-function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xtrgs, do_var)
+function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xtrgs, opts)
 % EFGP1D   fast equispaced Fourier NUFFT-based GP regression in 1D
 %
 % [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xtrgs) 
@@ -15,6 +15,14 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
 % eps    - truncate covariance kernel in time and Fourier domains when values
 %          of functions reach eps
 % xtrgs   - locations at which to evaluate posterior mean
+% opts - [optional] struct controlling method params including:
+%         cg_tol_fac - cg tolerance will be set to tol/cg_tol_fac, default
+%         value 1;
+%         use_integral - whether to use old tail integral estimates for
+%         determining h,m
+%         l2scaled - whether to use l2 scaling of integral with new
+%         heuristics in determining h,m
+%         get_var - compute posterior variance as well
 %
 % Outputs:
 % beta - vector of Fourier basis weights (not really for the user)
@@ -26,13 +34,16 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
 %
 % To test this routine see: EFGP
     
+    if(nargin == 6), opts = []; end
     k = ker.k; khat = ker.khat;  % get functions, new kernel format
     N = numel(y);
     
     tic_precomp = tic;
     x0 = min([x; xtrgs]); x1 = max([x; xtrgs]);
     L = x1-x0;                   % approx domain length *** could check xtrg too?
-    [xis, h, m] = get_xis(ker, eps, L);
+    
+    [xis, h, m] = get_xis(ker, eps, L,opts);
+    
     % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
     xcen = (x1+x0)/2;
     tphx = 2*pi*h*(x - xcen);
@@ -56,8 +67,13 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
     % solve linear system (X^*X + sigma^2)beta = rhs with conjugate gradient
     Afun = @(a) ws .* Afun2(Gf, ws .* a) + sigmasq .* a; 
     
+    cg_tol_fac = 1;
+    if(isfield(opts,'cg_tol_fac'))
+        cg_tol_fac = opts.cg_tol_fac;
+    end
+    cgtol = eps/cg_tol_fac;
     tic_cg = tic; 
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, eps, 3*m);  % solve beta vec
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, 3*m);  % solve beta vec
     t_cg = toc(tic_cg);
     
     % tabulate solution using fft
@@ -71,8 +87,13 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
     % each target point evaluate the quadratic form f' C^{-1} f where C is
     % the posterior covariance and f is a vector of basis functions
     % (complex exponentials) tabulated at one target point
+    do_var = false;
+    if(isfield(opts,'get_var'))
+        do_var = opts.get_var;
+    end
+    
     if do_var
-        eps_var = max(1e-3, eps); % don't need high precision
+        eps_var = max(1e-3, eps_cg); % don't need high precision
         Afun_var = @(a) ws .* Afun2(Gf, ws .* a)/sigmasq + a; 
         ntrgs = numel(xtrgs);
         ytrg.var = zeros(ntrgs, 1);
