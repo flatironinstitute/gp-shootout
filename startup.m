@@ -11,7 +11,8 @@ igpytorch = 0;
 
 str = which('finufft');   % checks the MEX file, not the matlab wrappers
 if(~isempty(str))
-   iefgp = 1;
+  warning('Please add FINUFFT/matlab to your path');
+  iefgp = 1;
 end
 
 % % point to library locations here, based on machine name
@@ -32,6 +33,7 @@ end
 
 % add to python path for python calls
 rel_path_to_ski = '/algs/SKI';
+iski = 1;
 try
     pyenv("ExecutionMode","OutOfProcess");
     path_to_ski = strcat(h, rel_path_to_ski);
@@ -39,7 +41,8 @@ try
         insert(py.sys.path, int32(0), path_to_ski);
     end
 catch
-    fprintf('Error in finding cython\n Skipping python path\n');
+  fprintf('Error in finding cython\n Skipping python path\n');
+  iski = 0;
 end
 
 
@@ -127,6 +130,13 @@ if(irlcm)
     fprintf('RLCM: Installation successful\n');
 else
     fprintf('RLCM: installation failure\n Submodule not included or g++ compiler or make not found\n');
+end
+fprintf('---------------------------------------------\n');
+
+if(iski)
+    fprintf('SKI:  Installation successful\n');
+else
+    fprintf('SKI:  installation failure\n Python engine not working; please start MATLAB with a different Python environment\n');
 end
 fprintf('---------------------------------------------\n');
 
