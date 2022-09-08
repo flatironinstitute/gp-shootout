@@ -95,7 +95,8 @@ end
 h = fileparts(mfilename('fullpath'));
 addpath(genpath(h))                        % gives access to all subdirs
 rmpath(genpath(fullfile(h,'.git')))
-
+rmpath(genpath(fullfile(h,'algs/RLCM/RLCM/ahb_try')))  % hide duplicate M-files in our RLCM fork
+    
 % terminal style
 format long g
 format compact
