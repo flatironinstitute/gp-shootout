@@ -10,14 +10,19 @@ load(fullfile(dir, 'sigmatrue.mat'));
 clear opts
 %%%opts.only_trgs = 1;
 opts.tol = 1e-4;
+opts.l2scaled = 1;
 opts_ref.only_trgs = 1;
 opts_ref.tol = 1e-5;
+opts_ref.l2scaled = 1;
 
 % 1d
 % load data
 fprintf("\n dim=1 \n");
-load(fullfile(dir, 'x_1d_1e8.mat'));
-load(fullfile(dir, 'meas_1d_1e8.mat'));
+%load(fullfile(dir, 'x_1d_1e8.mat'));
+%load(fullfile(dir, 'meas_1d_1e8.mat'));
+load(fullfile(dir, 'x_1d_1e7.mat'));
+load(fullfile(dir, 'meas_1d_1e7.mat'));
+load(fullfile(dir, 'truemeas_1d_1e7.mat'));
 dim = 1;
 l = 0.1;
 ker = SE_ker(dim,l);
@@ -28,9 +33,10 @@ nns = 7;
 for i=1:nns
     N = 10^i;
     % subsample
-    x_i = x(numel(meas) * (1:N)/N);
-    meas_i = meas(numel(meas) * (1:N)/N);
-    
+    inds = numel(meas) * (1:N)/N;
+    x_i = x(inds);
+    meas_i = meas(inds);
+    truemeas_i = truemeas(inds);
     sigmasq = sigmatrue^2;
     [y, ytrgs, info] = EFGP(x_i, meas_i, sigmasq, ker, xtrgs, opts);
     
@@ -41,6 +47,7 @@ for i=1:nns
     err_eepm = rms(ytrgs.mean-ytrgs_true.mean);
     err_linf = max(abs(ytrgs.mean-ytrgs_true.mean));
     err_rms = rms(meas_i - y.mean);
+    err_rms2 = rms(truemeas_i - y.mean);
     m = (numel(info.xis) -  1) / 2;
     
 %         fprintf('EFGP rms at targets %.3g, time: %.3g\n', rms(ytrgs.mean-ytrgs_true.mean), info.cpu_time.total);
@@ -53,8 +60,8 @@ for i=1:nns
 %         fprintf('mean/target  %.3g\n', info.cpu_time.mean / (ntrgs_per_d^dim));
     
      % print for latex table
-     fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
-         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms);
+     fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
+         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rms2);
      filename = sprintf('se_%gd_info_1e%g.mat', dim, log10(N));
      save(fullfile(dir, filename), 'info')
      filename = sprintf('se_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -69,8 +76,9 @@ end
 % 2d
 % load data
 fprintf("\n dim=2 \n");
-load(fullfile(dir, 'x_2d_1e8.mat'));
-load(fullfile(dir, 'meas_2d_1e8.mat'));
+load(fullfile(dir, 'x_2d_1e7.mat'));
+load(fullfile(dir, 'meas_2d_1e7.mat'));
+load(fullfile(dir, 'truemeas_2d_1e7.mat'));
 dim = 2;
 l = 0.1;
 ker = SE_ker(dim,l);
@@ -81,18 +89,22 @@ xtrgs = equispaced_grid(dim, ntrgs_per_d);
 clear opts
 %opts.only_trgs = 1;
 opts.tol = 1e-4;
+opts.l2scaled = 1;
 opts_ref.only_trgs = 1;
 opts_ref.tol = 1e-5;
+opts_ref.l2scaled = 1;
 
 nns = 7;
 for i=1:nns
     N = 10^i;
 
     % subsample
-    x_i = x(:, numel(meas) * (1:N)/N);
-    meas_i = meas(numel(meas) * (1:N)/N);
-    x_i(:, 1) = x(:, 1);
-    meas_i(1) = meas(1);
+    inds = numel(meas) * (1:N)/N;    
+    x_i = x(:, inds);
+    meas_i = meas(inds);
+    truemeas_i = truemeas(inds);
+    %x_i(:, 1) = x(:, 1);
+    %meas_i(1) = meas(1);
 
     % regression
     sigmasq = sigmatrue^2;
@@ -102,13 +114,12 @@ for i=1:nns
     err_eepm = rms(ytrgs.mean-ytrgs_true.mean);
     err_linf = max(abs(ytrgs.mean-ytrgs_true.mean));
     err_rms = rms(meas_i - y.mean);
+    err_rms2 = rms(truemeas_i - y.mean);
     m = (numel(info.xis) -  1) / 2;
     
     % print for latex table
-    %fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ \\\\ \n", ...
-         %log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm);
-    fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
-         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms);
+     fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
+         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rms2);
     filename = sprintf('se_%gd_info_1e%g.mat', dim, log10(N));
     save(fullfile(dir, filename), 'info');
     filename = sprintf('se_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -124,8 +135,9 @@ end
 % load data
 fprintf("\n dim=3 \n");
 dim = 3;
-load(fullfile(dir, 'x_3d_1e8.mat'));
-load(fullfile(dir, 'meas_3d_1e8.mat'));
+load(fullfile(dir, 'x_3d_1e7.mat'));
+load(fullfile(dir, 'meas_3d_1e7.mat'));
+load(fullfile(dir, 'truemeas_3d_1e7.mat'));
 l = 0.1;
 ker = SE_ker(dim,l);
 ntrgs_per_d = 100;
@@ -135,15 +147,19 @@ xtrgs = equispaced_grid(dim, ntrgs_per_d);
 clear opts
 %opts.only_trgs = 1;
 opts.tol = 1e-3;
+opts.l2scaled = 1;
 opts_ref.only_trgs = 1;
 opts_ref.tol = 1e-4;
+opts_ref.l2scaled = 1;
 
 nns = 7;
 for i=1:nns
     N = 10^i;
     % subsample
-    x_i = x(:, numel(meas) * (1:N)/N);
-    meas_i = meas(numel(meas) * (1:N)/N);
+    inds = numel(meas) * (1:N)/N;    
+    x_i = x(:, inds);
+    meas_i = meas(inds);
+    truemeas_i = truemeas(inds);
 
     sigmasq = sigmatrue^2;
     [y, ytrgs, info] = EFGP(x_i, meas_i, sigmasq, ker, xtrgs, opts);
@@ -155,13 +171,11 @@ for i=1:nns
     err_eepm = rms(ytrgs.mean-ytrgs_true.mean);
     err_linf = max(abs(ytrgs.mean-ytrgs_true.mean));
     err_rms = rms(meas_i - y.mean);
-
+    err_rms2 = rms(truemeas_i - y.mean);
     
     % print for latex table
-    %fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ \\\\ \n", ...
-    %     log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm);
-    fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
-         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms);
+     fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
+         log10(N), m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rms2);
     filename = sprintf('se_%gd_info_1e%g.mat', dim, log10(N));
     save(fullfile(dir, filename), 'info');
     filename = sprintf('se_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -185,6 +199,8 @@ for dim = 1:3
         load(fullfile(dir, filename));
         % load errors
         filename = sprintf('se_%gd_rms_err_1e%g.mat', dim, log10(N));
+        load(fullfile(dir, filename));
+        filename = sprintf('se_%gd_eepm_1e%g.mat', dim, log10(N));
         load(fullfile(dir, filename));
         % print for table
         fprintf("$ 10^{%d}$ & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
