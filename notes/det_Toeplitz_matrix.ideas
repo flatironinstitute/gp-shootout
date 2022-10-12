@@ -38,5 +38,15 @@ IDEAS:
 * try out Krishnamoorthy matlab central code - invchol_durbin.
       - but need to change to return D in  L^T D L ... :(
 
+* Sec 1.2 of Minden '17 mentions: Aune 
+ "involved framework for approximating the log-determinant using Krylov
+methods, assuming the covariance matrix or its inverse can be efficiently applied."
+ E. Aune, D. P. Simpson, and J. Eidsvik, Parameter estimation in high di-
+mensional Gaussian distributions, Statistics and Computing, 24 (2014), pp. 247–263,
+doi:10.1007/s11222-012-9368-y
+  Also mentioned:
+J. E. Castrillón-Candás, M. G. Genton, and R. Yokota, Multi-level restricted
+maximum likelihood covariance estimation and Kriging for large non-gridded spatial
+datasets, Spatial Statistics, (2015).
 
 
