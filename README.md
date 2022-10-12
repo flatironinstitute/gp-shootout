@@ -1,6 +1,6 @@
 # gp-shootout
 
-Benchmark and compare several large-scale GP regression methods in 1D, 2D, and 3D,
+Benchmark and compare several large-scale Gaussian process regression methods in 1D, 2D, and 3D,
 including our implementation of the equispaced Fourier method (EFGP).
 We also generate figures and tables for the paper.
 

@@ -1,4 +1,4 @@
-function [xis, h, m] = get_xis(ker, eps, L, opts)
+function [xis, h, mtot] = get_xis(ker, eps, L, opts)
 % GET_XIS   Return 1D equispaced Fourier quadrature nodes for given tolerance
 %
 % xis = get_xis(ker, eps, L) returns an equispaced list of 1D frequency nodes
@@ -18,7 +18,7 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
 %   xis   - row-vector of equispaced values to be used as quadrature nodes
 %           (all weights in 1D are h=xis(2)-xis(1)).  Their number is odd.
 %   h     - spacing between nodes
-%   m     - total number of nodes
+%   mtot  - total number of nodes in 1D (2*m+1 in paper)
 %  Notes:
 %  1) The spacing h is chosen using L, the real-space radial kernel function
 %     ker.k, the spatial dimension ker.dim, and an aliasing error estimate.
@@ -63,13 +63,14 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
           eps_use = eps/ker.var;
           if(isfield(opts,'l2scaled')) 
              if(opts.l2scaled)
-               rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);
+               rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);   % alex notes there's cancellation of 2^stuff here?
                eps_use = eps*sqrt(rl2sq);
              end
           end
 
           eps = eps_use;
-          h = 1/(L+0.85*l/sqrt(ker.nu)*log(1/eps));
+          h = 1/(L+0.85*l/sqrt(ker.nu)*log(1/eps));   % heuristic \eqref{hheur}
+          % note hm is "m" in the paper...
           hm = ceil(( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h);
           
       elseif(strcmpi(ker.fam,'squared-exponential'))
@@ -85,11 +86,11 @@ function [xis, h, m] = get_xis(ker, eps, L, opts)
           end
           eps = eps_use;
           h = 1/(L+l*sqrt(2*log(4*dim*3^dim/eps)));
-          hm = ceil(sqrt(log(dim*(4^(dim+1))/eps)/2)/pi/l/h);
+          hm = ceil(sqrt(log(dim*(4^(dim+1))/eps)/2)/pi/l/h); % again, "m"
       end
   end
   
   
-  xis = (-hm:hm)*h;           % use exactly h, so may have bit of spillover
-  m = numel(xis);
+  xis = (-hm:hm)*h;           % use exactly h, so can get bit of spillover
+  mtot = numel(xis);          % 2m+1
 end

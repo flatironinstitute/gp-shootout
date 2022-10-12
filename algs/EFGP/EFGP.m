@@ -131,7 +131,7 @@ opts.tol = 1e-3;
 opts.l2scaled = true;
 L = 50.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 
-for dim = 2:2   % ..........
+for dim = 1:3   % ..........
   fprintf('\ntest EFGP, sigma=%.3g, tol=%.3g, dim=%d...\n',sigma,opts.tol,dim)
   unitvec = randn(dim,1); unitvec = unitvec/norm(unitvec);
   wavevec = freqdata*unitvec;    % col vec

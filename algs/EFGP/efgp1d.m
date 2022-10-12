@@ -41,7 +41,7 @@ function [beta, xis, ytrg, iter, time_info, ws] = efgp1d(x, y, sigmasq, ker, eps
     tic_precomp = tic;
     x0 = min([x; xtrgs]); x1 = max([x; xtrgs]);
     L = x1-x0;                   % approx domain length *** could check xtrg too?
-    [xis, h, m] = get_xis(ker, eps, L,opts);
+    [xis, h, mtot] = get_xis(ker, eps, L,opts);   % mtot = 2m+1 from paper
     
     % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
     xcen = (x1+x0)/2;
@@ -54,12 +54,12 @@ function [beta, xis, ytrg, iter, time_info, ws] = efgp1d(x, y, sigmasq, ker, eps
     % construct first row and column of toeplitz matrix for fast apply
     nuffttol = eps / 10;   % nufft is fast, so keep its errors insignificant
     c = complex(ones(N, 1));      % unit weights
-    XtXcol = finufft1d1(tphx, c, -1, nuffttol, 2*m-1);
+    XtXcol = finufft1d1(tphx, c, -1, nuffttol, 2*mtot-1);
     Gf = fftn(XtXcol);          % no conj; equiv to isign=-1
     
     % construct rhs = X^*y, with NUFFT
     isign = -1;
-    rhs = finufft1d1(tphx, y, isign, nuffttol, m);
+    rhs = finufft1d1(tphx, y, isign, nuffttol, mtot);
     rhs = ws .* rhs;                         % col vecs
     t_precomp = toc(tic_precomp);
     
@@ -71,8 +71,9 @@ function [beta, xis, ytrg, iter, time_info, ws] = efgp1d(x, y, sigmasq, ker, eps
         cg_tol_fac = opts.cg_tol_fac;
     end
     cgtol = eps/cg_tol_fac;
-    tic_cg = tic; 
-    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, 3*m);  % solve beta vec
+    tic_cg = tic;
+    maxit = 3*mtot;
+    [beta,flag,relres,iter,resvec] = pcg(Afun, rhs, cgtol, maxit);  % solve beta vec
     t_cg = toc(tic_cg);
     
     % tabulate solution using fft
@@ -97,8 +98,8 @@ function [beta, xis, ytrg, iter, time_info, ws] = efgp1d(x, y, sigmasq, ker, eps
         ntrgs = numel(xtrgs);
         ytrg.var = zeros(ntrgs, 1);
         for i=1:ntrgs
-            rhs = exp(1i * tphxtrgs(i) * (-(m-1)/2:1:(m-1)/2)) * diag(ws);
-            [beta,flag,relres,iter,resvec] = pcg(Afun_var, rhs', eps_var, 3*m);
+            rhs = exp(1i * tphxtrgs(i) * (-(mtot-1)/2:1:(mtot-1)/2)) * diag(ws);
+            [beta,flag,relres,iter,resvec] = pcg(Afun_var, rhs', eps_var, maxit);
             ytrg.var(i) = real(rhs * beta);
         end
     end
@@ -114,9 +115,9 @@ function [v2] = Afun2(Gf, a)
 % this function performs a fast multiply by Toeplitz matrix, needed for
 % conjugate gradient. it takes an fft of a and multiplies 
 % in "coeff frequency" domain by Gf and then converts back to "coeff" domain.
-    m = numel(a);
+    mtot = numel(a);
     af = fftn(a, size(Gf));
     vft = af .* Gf;
     vft = ifftn(vft);
-    v2 = vft(m:end);
+    v2 = vft(mtot:end);
 end
