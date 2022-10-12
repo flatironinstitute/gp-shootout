@@ -80,7 +80,7 @@ if do_dense
         [info.beta, info.xis, yhat, cpu_time, info.A, info.X, info.ws] = efgp2d_dense(x', meas, sigmasq, ker, opts.tol, xsol, opts);
     end
 elseif dim==1
-  [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, opts);
+  [info.beta, info.xis, yhat, info.iter, cpu_time, info.ws] = efgp1d(x', meas, sigmasq, ker, opts.tol, xsol, opts);
 elseif dim==2
   [info.beta, info.xis, yhat, info.iter, cpu_time] = efgp2d(x', meas, sigmasq, ker, opts.tol, xsol, opts); 
 elseif dim==3
@@ -104,14 +104,19 @@ info.cpu_time.mean = cpu_time(3);
 if isfield(opts, 'only_trgs')
     y.mean = [];
     ytrg.mean = yhat.mean; 
+    if do_var
+        y.var = [];
+        ytrg.var = yhat.var;
+    end
 else
     y.mean = yhat.mean(1:N);   % hack for now to split out posterior means into two types
     ytrg.mean = yhat.mean(N+1:end);
+    if do_var
+        y.var = yhat.var(1:N);
+        ytrg.var = yhat.var(N+1:end);
+    end
 end
 
-if do_var
-    ytrg.var = yhat.var;
-end
 
 
 %%%%%%%%%%
