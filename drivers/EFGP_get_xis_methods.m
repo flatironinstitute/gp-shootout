@@ -11,13 +11,16 @@ opts{3} = [];
 
 
 opts{1}.use_integral = true;
+opts{1}.cg_tol_fac = 100.0;
 
 opts{2}.use_integral = false;
 opts{2}.l2scaled = false;
+opts{2}.cg_tol_fac = 100.0;
 
 
 opts{3}.use_integral = false;
 opts{3}.l2scaled = true;
+opts{3}.cg_tol_fac = 100.0;
 L = 1.0; shift = 200;   % arbitary, tests correct centering and L-box rescale
 lvec = [0.1;0.3];
 
@@ -35,9 +38,10 @@ for dim = 1:3   % ..........
   x = L*x + (2*rand(dim,1)-1)*shift;                           % scale & shift
   if(dim == 1), tolvec = [1e-4; 1e-6]; end
   if(dim == 2), tolvec = [1e-3; 1e-5]; end
-  if(dim == 3), tolvec = [1e-3; 1e-4]; end
+  if(dim == 3), tolvec = [1e-2; 1e-3]; end
      
   for itol = [1 2]
+      fprintf('starting dim=%d,   itol=%d\n',dim,itol);
       tol = tolvec(itol);
       
   
@@ -62,4 +66,4 @@ for dim = 1:3   % ..........
   end
 end
 
-save('data_efgp_get_xis_compare.mat','iters','nxis','errs','ttime');
+save('data_efgp_get_xis_compare_cgtol_100.mat','iters','nxis','errs','ttime');
