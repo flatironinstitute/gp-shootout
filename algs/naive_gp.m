@@ -56,9 +56,23 @@ info.cpu_time(2) = toc;
 ytrg = [];
 if do_trg
   [~,ntrg] = size(xtrg);        % # targs
+  ytrg.mean = zeros(ntrg, 1);
   tic;
-  B = densekermat(ker.k,xtrg,x);   %  n-by-N
-  ytrg.mean = B * alpha;    % do the GP sum, naively
+  if ntrg >= 1e4
+      % go 1e4 chunks at a time
+      for i=1:ceil(ntrg / 1e4)
+          i0 = (i - 1) * 1e4 + 1;
+          i1 = i0 + 1e4;
+          if i1 > ntrg
+              i1 = ntrg;
+          end
+          B = densekermat(ker.k, xtrg(:, i0 : i1), x);
+          ytrg.mean(i0:i1) = B * alpha;
+      end
+  else
+      B = densekermat(ker.k,xtrg,x);   %  n-by-N
+      ytrg.mean = B * alpha;    % do the GP sum, naively
+  end
   info.cpu_time(3) = toc;
 end
 
@@ -81,6 +95,7 @@ end
 
 %%%%%%%%%%
 function test_naive_gp   % basic tests for now, eg doesn't test covar
+rng(1);
 N = 3e1;        % problem size
 l = 0.1;        % SE kernel scale
 sigma = 0.3;    % used to regress
@@ -95,7 +110,7 @@ for dim = 2:2   % ..........
   [x, meas, truemeas] = get_randdata(dim, N, f, sigmadata);
   ker = SE_ker(dim,l);
 
-  ntrgs = 20;
+  ntrgs = 1e2;
   xtrg = equispaced_grid(dim, ntrgs);
   opts.getvar = true;
   [y, ytrg, info] = naive_gp(x, meas, sigma^2, ker, xtrg, opts);
