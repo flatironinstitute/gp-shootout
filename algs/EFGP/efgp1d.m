@@ -1,4 +1,4 @@
-function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xtrgs, opts)
+function [beta, xis, ytrg, iter, time_info, ws] = efgp1d(x, y, sigmasq, ker, eps, xtrgs, opts)
 % EFGP1D   fast equispaced Fourier NUFFT-based GP regression in 1D
 %
 % [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xtrgs) 
@@ -41,7 +41,6 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
     tic_precomp = tic;
     x0 = min([x; xtrgs]); x1 = max([x; xtrgs]);
     L = x1-x0;                   % approx domain length *** could check xtrg too?
-    
     [xis, h, m] = get_xis(ker, eps, L,opts);
     
     % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
@@ -93,7 +92,7 @@ function [beta, xis, ytrg, iter, time_info] = efgp1d(x, y, sigmasq, ker, eps, xt
     end
     
     if do_var
-        eps_var = max(1e-3, eps_cg); % don't need high precision
+        eps_var = max(1e-3, cgtol); % don't need high precision
         Afun_var = @(a) ws .* Afun2(Gf, ws .* a)/sigmasq + a; 
         ntrgs = numel(xtrgs);
         ytrg.var = zeros(ntrgs, 1);
