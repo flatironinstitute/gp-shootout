@@ -42,7 +42,7 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
   N = size(x,1);
   quadtol = eps;  % * min(1,1e2*sigmasq/sqrt(N))   % *** in devel; 1e-16 conv
   
-  [xis, h, m] = get_xis(ker, eps, L,opts);
+  [xis, h, mtot] = get_xis(ker, eps, L,opts);   % mtot = 2m+1 from paper
   [xis_xx, xis_yy] = ndgrid(xis, xis);    % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec
@@ -55,14 +55,14 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
   
   % precomputation for fast apply of X*X
   nuffttol = eps/10;     % 1e-14 to check conv
-  Gf = getGf(nuffttol, tphx, m);
+  Gf = getGf(nuffttol, tphx, mtot);
     
   % conjugate gradient
   ws_flat = ws(:);
-  Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a, m) + sigmasq .* a;
+  Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a, mtot) + sigmasq .* a;
     
     isign = -1;
-    rhs = finufft2d1(tphx(:,1), tphx(:,2), y, isign, nuffttol, m, m);
+    rhs = finufft2d1(tphx(:,1), tphx(:,2), y, isign, nuffttol, mtot, mtot);
     rhs = reshape(rhs .* ws, [], 1);
     t_precomp = toc(tic_precomp);
 
@@ -73,12 +73,13 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
         cg_tol_fac = opts.cg_tol_fac;
     end
     cgtol = eps/cg_tol_fac;
-    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,cgtol,3*m^2);
+    maxit = 3*mtot^2;
+    [beta,flag,relres,iter,resvec] = pcg(Afun,rhs,cgtol,maxit);
     t_cg = toc(tic_cg);
     
     % evaluate posterior mean 
     tic_post = tic;
-    wsbeta = ws .* reshape(beta, [m, m]);
+    wsbeta = ws .* reshape(beta, [mtot, mtot]);
     isign = +1;
     yhat = finufft2d2(tphxsol(:,1), tphxsol(:,2),isign,nuffttol,wsbeta);
     ytrg.mean = real(yhat);
@@ -90,22 +91,22 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
 end
 
 
-function [Gf] = getGf(nuffttol, tphx, m)
+function [Gf] = getGf(nuffttol, tphx, mtot)
 % array to multiply by on the 2D FFT side that convolves with Toeplitz col blk
     N = size(tphx,1);
     c = complex(ones(N, 1));         % unit strengths
     isign = -1;
     o.modeord = 1;
-    XtXcol_blk = finufft2d1(tphx(:,1), tphx(:,2), c, isign, nuffttol, 2*m-1, 2*m-1, o);
+    XtXcol_blk = finufft2d1(tphx(:,1), tphx(:,2), c, isign, nuffttol, 2*mtot-1, 2*mtot-1, o);
     Gf = fftn(XtXcol_blk);
 end
 
 
-function [v] = apply_xtx(Gf, b, m)
-    b = reshape(b, m, m);
+function [v] = apply_xtx(Gf, b, mtot)
+    b = reshape(b, mtot, mtot);
     vft = fftn(b,size(Gf));
     vft = vft.*Gf;
     vft = ifftn(vft);
-    v = vft(1:m,1:m);
+    v = vft(1:mtot,1:mtot);
     v = v(:);
 end
