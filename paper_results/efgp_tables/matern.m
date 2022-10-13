@@ -80,7 +80,7 @@ for dim=3:3
         filename = sprintf('mat_%gd_rms_err_1e%g.mat', dim, log10(N));
         save(fullfile(dir, filename), 'err_rms');
         filename = sprintf('mat_%gd_err_rmse_ex_1e%g.mat', dim, log10(N));
-        save(fullfile(dir, filename), 'err_rms2');
+        save(fullfile(dir, filename), 'err_rmse_ex');
     end
 
 end

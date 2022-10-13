@@ -28,7 +28,7 @@ for dim=1:3
 
     l = 0.1;
     ker = SE_ker(dim,l);
-    ntrgs_per_d = 50;
+    ntrgs_per_d = 60;
     xtrgs = equispaced_grid(dim, ntrgs_per_d);
     ntrgs = ntrgs_per_d^(dim);
     ftrgs = f(xtrgs);
