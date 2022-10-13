@@ -55,7 +55,7 @@ In order of appearance in paper:
 * Fig. 1 {f:discr}: from paper repo `equispaced_fourier_gps` run `discr_figs.jl` in Julia. A couple of seconds runtime.
 * Fig. 2 {f:materr}: `drivers/fig_materr.m`, takes around 1 minute.
 * Fig. 3 {fig:cond1} and Fig. 4 {fig:cond_heatmap}: `results/philip/cond_number/cond_number.m`. Uses 1d data from `efgp_tables`. Takes ?
-* Table 2 {table3}, ie the EFGP only N-scaling tests: `results/philip/efgp_tables` ?   Data is subsampled from MAT files of size N=1e7 for each N. Time ?
+* Table 2 {table3}, ie the EFGP only N-scaling tests: `paper_results/efgp_tables` Data is subsampled from MAT files of size N=1e7 for each N. Time: about 5 minutes
 * Fig. 5 {acc_v_time}:  ?
 * Fig. 6 {fig:co2}: ?
 * Table 3 {tbig1}: ?
