@@ -3,7 +3,7 @@
 rng(1);
 
 % sigma used to generate data and to be used for regression
-dir = "~/gp-shootout/paper_results/efgp_tables/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 load(fullfile(dir, 'sigmatrue.mat'));
 
 % set opts
