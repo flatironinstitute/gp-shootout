@@ -71,7 +71,7 @@ for dim=1:3
         % print for latex table
         fprintf("$ 10^{%d}$ & $ %d $ & %s & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
                 log10(N), dim, 'Mat $1/2$', m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rmse_ex);
-        info.opts = opts; info.opts_ref = opts.ref;    % crucial to save
+        info.opts = opts; info.opts_ref = opts_ref;    % crucial to save
         filename = sprintf('mat_%gd_info_1e%g.mat', dim, log10(N));
         save(fullfile(dir, filename), 'info')
         filename = sprintf('mat_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -88,13 +88,11 @@ end
 
 % print stuff
 for dim = 1:3
-    %fprintf('\ndim=%g\n',dim)
     for i=3:7
         N = 10^(i);
         % load info 
-        filename = sprintf('mat_%gd_info_1e%g.mat', dim, i);
+        filename = sprintf('mat_%gd_info_1e%g.mat', dim, log10(N));
         load(fullfile(dir, filename));
-        % load errors
         filename = sprintf('mat_%gd_rms_err_1e%g.mat', dim, log10(N));
         load(fullfile(dir, filename));
         filename = sprintf('mat_%gd_eepm_err_1e%g.mat', dim, log10(N));

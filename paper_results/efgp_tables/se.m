@@ -37,15 +37,13 @@ for dim=1:3
     
     if dim == 1
         opts.tol = 1e-4;
-        opts_ref.tol = 1e-5;
     elseif dim == 2
         opts.tol = 1e-4;
-        opts_ref.tol = 1e-5;
     else
         opts.tol = 1e-3;
-        opts_ref.tol = 1e-4;
     end
-    
+    opts_ref.tol = opts.tol / 10;
+
     nns = 7;
     for i=3:nns
         N = 10^i;
@@ -66,8 +64,6 @@ for dim=1:3
 
         % compute RMSE_{ex}
         err_rmse_ex = rms(ytrgs_test - ytrgs_true.mean);
-
-        %disp(size(info.xis));
         err_eepm = rms(ytrgs.mean-ytrgs_true.mean);
         err_linf = max(abs(ytrgs.mean-ytrgs_true.mean));
         err_rms = rms(ytrgs_test - ytrgs.mean);
@@ -76,6 +72,7 @@ for dim=1:3
         % print for latex table
         fprintf("$ 10^{%d}$ & $ %d $ & %s & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
              log10(N), dim, 'SE', m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rmse_ex);
+        info.opts = opts; info.opts_ref = opts_ref;    % crucial to save
         filename = sprintf('se_%gd_info_1e%g.mat', dim, log10(N));
         save(fullfile(dir, filename), 'info')
         filename = sprintf('se_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -92,7 +89,7 @@ end
 
 
 % print the full table
-fprintf("PASTE THE FOLLOWING INTO {table3} in main2.tex: ==============================================START")
+fprintf("PASTE THE FOLLOWING INTO {table3} in main2.tex: ==============================================START\n")
 for dim = 1:3
     %fprintf('\ndim=%g\n',dim)
     for i=3:7
@@ -115,4 +112,4 @@ for dim = 1:3
     end
     fprintf("\\hline \\hline \n")
 end
-printf("===============================================END")
+fprintf("===============================================END")
