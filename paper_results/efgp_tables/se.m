@@ -92,6 +92,7 @@ end
 
 
 % print the full table
+fprintf("PASTE THE FOLLOWING INTO {table3} in main2.tex: ==============================================START")
 for dim = 1:3
     %fprintf('\ndim=%g\n',dim)
     for i=3:7
@@ -114,3 +115,4 @@ for dim = 1:3
     end
     fprintf("\\hline \\hline \n")
 end
+printf("===============================================END")

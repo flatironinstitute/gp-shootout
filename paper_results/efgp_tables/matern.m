@@ -13,7 +13,7 @@ opts.l2scaled = 1;
 opts_ref.l2scaled = 1;
 opts_ref.only_trgs = 1;
 
-for dim=3:3
+for dim=1:3
     fprintf("\n dim=%d \n", dim);
     filename = sprintf('x_%gd_1e7.mat', dim);
     load(fullfile(dir, filename));
@@ -38,15 +38,13 @@ for dim=3:3
     
     if dim == 1
         opts.tol = 1e-4;
-        opts_ref.tol = 1e-5;
     elseif dim == 2
         opts.tol = 1e-3;
-        opts_ref.tol = 1e-4;
     else
-        opts.tol = 0.5*1e-2;
-        opts_ref.tol = 0.5*1e-3;
+        opts.tol = 0.5*1e-2;   % since 1e-3 was taking >> 2 hrs for 3d :(
     end
-    
+    opts_ref.tol = opts.tol/10;
+
     for i=3:7
         N = 10^i;
         % subsample
@@ -72,7 +70,8 @@ for dim=3:3
         
         % print for latex table
         fprintf("$ 10^{%d}$ & $ %d $ & %s & $ %d $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %.3f $ & $ %d $ & $ %.1d $ & $ %.1d $ & $ %.1d $ \\\\ \n", ...
-             log10(N), dim, 'Mat $1/2$', m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rmse_ex);
+                log10(N), dim, 'Mat $1/2$', m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rmse_ex);
+        info.opts = opts; info.opts_ref = opts.ref;    % crucial to save
         filename = sprintf('mat_%gd_info_1e%g.mat', dim, log10(N));
         save(fullfile(dir, filename), 'info')
         filename = sprintf('mat_%gd_eepm_err_1e%g.mat', dim, log10(N));
@@ -80,7 +79,7 @@ for dim=3:3
         filename = sprintf('mat_%gd_rms_err_1e%g.mat', dim, log10(N));
         save(fullfile(dir, filename), 'err_rms');
         filename = sprintf('mat_%gd_err_rmse_ex_1e%g.mat', dim, log10(N));
-        save(fullfile(dir, filename), 'err_rms2');
+        save(fullfile(dir, filename), 'err_rmse_ex');
     end
 
 end
