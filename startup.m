@@ -10,9 +10,8 @@ irlcm = 0;
 igpytorch = 0;
 
 str = which('finufft');   % checks the MEX file, not the matlab wrappers
-if(~isempty(str))
+if isempty(str)
   warning('Please add FINUFFT/matlab to your path');
-  iefgp = 1;
 end
 
 % % point to library locations here, based on machine name
