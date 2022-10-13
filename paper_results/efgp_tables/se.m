@@ -3,7 +3,7 @@
 rng(1);
 
 % sigma used to generate data and to be used for regression
-dir = "~/gp-shootout/paper_results/efgp_tables/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 load(fullfile(dir, 'sigmatrue.mat'));
 
 % set opts
@@ -92,6 +92,7 @@ end
 
 
 % print the full table
+fprintf("PASTE THE FOLLOWING INTO {table3} in main2.tex: ==============================================START")
 for dim = 1:3
     %fprintf('\ndim=%g\n',dim)
     for i=3:7
@@ -114,3 +115,4 @@ for dim = 1:3
     end
     fprintf("\\hline \\hline \n")
 end
+printf("===============================================END")

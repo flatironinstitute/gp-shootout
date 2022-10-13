@@ -1,7 +1,8 @@
 rng(1);
 
 % set directory for loading data and saving results
-dir = "~/gp-shootout/paper_results/efgp_tables/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
+system(['mkdir -p ' dir]);
 sigmatrue = 0.3;  % used to regress
 save(fullfile(dir, 'sigmatrue.mat'),'sigmatrue');
 
