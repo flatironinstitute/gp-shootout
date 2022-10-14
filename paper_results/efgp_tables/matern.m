@@ -90,13 +90,11 @@ end
 
 if 0   % print stuff ..... obsolete, see nicelatextable.m
 for dim = 1:3
-    %fprintf('\ndim=%g\n',dim)
     for i=3:7
         N = 10^(i);
         % load info 
-        filename = sprintf('mat_%gd_info_1e%g.mat', dim, i);
+        filename = sprintf('mat_%gd_info_1e%g.mat', dim, log10(N));
         load(fullfile(dir, filename));
-        % load errors
         filename = sprintf('mat_%gd_rms_err_1e%g.mat', dim, log10(N));
         load(fullfile(dir, filename));
         filename = sprintf('mat_%gd_eepm_err_1e%g.mat', dim, log10(N));

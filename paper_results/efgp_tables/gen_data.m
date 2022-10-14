@@ -12,7 +12,7 @@ N = 1e7;
 % 1d, N=1e7
 dim = 1;
 wavevec = 3.0;
-f = @(x) cos(2*pi*x'* wavevec + 1.3);
+f = @(x) cos(2*pi*x'.* wavevec + 1.3);
 [x, meas, truemeas] = get_randdata(dim, N, f, sigmatrue);
 save(fullfile(dir, 'meas_1d_1e7.mat'), 'meas');
 save(fullfile(dir, 'truemeas_1d_1e7.mat'), 'truemeas');
