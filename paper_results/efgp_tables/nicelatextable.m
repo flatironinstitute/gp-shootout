@@ -2,10 +2,12 @@
 % from saved MAT file data.  Writes to .tex inclusion file.
 % Barnett 10/13/22.
 
-%dir = [fileparts(mfilename('fullpath')) '/data'];   % code writes to
+%dir = [fileparts(mfilename('fullpath')) '/data'];   % local code writes to
 dir = [fileparts(mfilename('fullpath')) '/efgp_table_results'];  % zip file
 
-out = 'table3_efgp_res_alex.tex';
+%out = 'table3_efgp_res_alex.tex';
+out = 'table3_efgp_res.tex';
+
 f=fopen(out,'w');
 
 % table header
@@ -64,5 +66,5 @@ end
 fprintf(f,"\\end{tabular}\n");
 fprintf(f,"}%%");
 
-% alex overwrite paper file...
-%system(sprintf('cp %s ../../../equispaced_fourier_gps/',out));
+% on alex's system, overwrites paper file...
+system(sprintf('cp %s ../../../equispaced_fourier_gps/',out));
