@@ -1,5 +1,6 @@
 % numerical results for efgp using squared-exponential kernel in 1, 2, 3
 % dimensions. the results are used to construct tables in the paper. 
+clear
 rng(1);
 
 % sigma used to generate data and to be used for regression
@@ -88,7 +89,7 @@ end
 
 
 
-% print the full table
+if 0 % print the full table.  Replaced by nicelatextable.m (alex)
 fprintf("PASTE THE FOLLOWING INTO {table3} in main2.tex: ==============================================START\n")
 for dim = 1:3
     %fprintf('\ndim=%g\n',dim)
@@ -112,4 +113,5 @@ for dim = 1:3
     end
     fprintf("\\hline \\hline \n")
 end
-fprintf("===============================================END")
+fprintf("===============================================END\n")
+end

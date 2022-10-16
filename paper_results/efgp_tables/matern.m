@@ -1,5 +1,6 @@
 % numerical results for efgp using squared-exponential kernel in 1, 2, 3
 % dimensions. the results are used to construct tables in the paper. 
+clear
 rng(1);
 
 % sigma used to generate data and to be used for regression
@@ -27,6 +28,7 @@ for dim=1:3
     load(fullfile(dir, filename));
 
     nu = 0.5;
+    l = 0.1;  % alex added since missing
     var = 1.0;
     ker = Matern_ker(dim, nu, l, var);
     ntrgs_per_d = 60;
@@ -86,7 +88,7 @@ end
 
 
 
-% print stuff
+if 0   % print stuff ..... obsolete, see nicelatextable.m
 for dim = 1:3
     for i=3:7
         N = 10^(i);
@@ -106,4 +108,5 @@ for dim = 1:3
              log10(N), dim, 'Mat $1/2$', m, info.cpu_time.precomp, info.cpu_time.cg, info.cpu_time.mean, info.cpu_time.total, info.iter, err_eepm, err_rms, err_rmse_ex);
     end
     fprintf("\\hline \\hline \n")
+end
 end
