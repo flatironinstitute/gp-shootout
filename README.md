@@ -2,6 +2,7 @@
 
 Benchmark and compare several large-scale Gaussian process regression methods in 1D, 2D, and 3D,
 including our implementation of the equispaced Fourier method (EFGP).
+We focus on posterior mean prediction (kernel ridge regression).
 We also generate figures and tables for the paper.
 
 Authors: Philip R Greengard, Alex H Barnett, Manas Rachh.
@@ -12,10 +13,9 @@ Authors: Philip R Greengard, Alex H Barnett, Manas Rachh.
 `git clone --recurse-submodules https://github.com/flatironinstitute/gp-shootout.git`
 
 This will also download install some submodule packages (currently: RLCM, FLAM).
-In addition your system must also have the following.
-Required dependencies:
+In addition your system must also have the following required dependencies:
 
-* MATLAB (tested on R2021b)
+* MATLAB (tested on R2021a and b)
 
 Dependencies specific to methods:
 
@@ -27,16 +27,14 @@ python environment in which MATLAB was opened to include:
    - gpytorch
    - pytorch
 * For RLCM: C++ compiler (and RLCM installed as submodule)
-* FLAM: (FLAM is installed as a submodule)
+* FLAM: a recent (2022) commit is needed (FLAM is installed as a submodule)
 
 To test the basic installation, start MATLAB from the top-level `gp-shootout`
 directory (which will execute `startup`), then within MATLAB type `test_all`.
 
 Advanced: to build then test all wrapped non-MATLAB methods:
 
-1) make sure you can call python from matlab, eg via `py.sys.version`
-
-then from MATLAB run `test_all_nonmatlab`.
+1) make sure you can call python from matlab, eg via `py.sys.version`, then from MATLAB run `test_all_nonmatlab`.
 
 
 
@@ -67,12 +65,11 @@ directory.
 
 ### To do
 
-* insert switch from EFGP to SSGP w/ same xi quad nodes.
-* explore EFGP accel via padding fftn to powers of only 2,3,5.
-* other top-level fig-generating driver scripts
+* Octave compatibility (apart from Py engine?)
 * understand empirical error breakdown as sigma->0 at large N
-* understand CG num iters growing like 1/sqrt(tol)
-* Update FLAMGP proxy setting to updated version proposed by Ken Ho
+* understand CG num iters growing like 1/sqrt(tol) sometimes
+* insert switch from EFGP to SSGP w/ same xi quad nodes
+* explore EFGP accel via padding fftn to powers of only 2,3,5
 * Move EFGP to a different repository and include it as a submodule
 
 
@@ -96,3 +93,6 @@ directory.
 * protect from annoying FLAM chol fail if tol too large
 * add Matern to RLCM (it's SE only so far)
 * FLAMGP in 3D
+* renamed m to mtot in efgp routines
+* other top-level fig-generating driver scripts
+* Update FLAMGP proxy setting to updated version proposed by Ken Ho
