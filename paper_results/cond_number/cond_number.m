@@ -112,7 +112,6 @@ imagesc(kappas);
 set(gca, 'XTick', 1:nsigs, 'XTickLabel', sigs)
 set(gca, 'YTick', 1:nns,   'YTickLabel', ns)
 set(gca,'YDir','normal')
-%%xtickformat('%.2f')
 caxis manual
 caxis([0 max(kappas, [], 'all')]);
 colorbar;
@@ -127,15 +126,10 @@ caxis([0 max(kappas, [], 'all')]);
 colorbar;
 
 subplot(1, 3, 3);
-%%%% log of ratio, not ratio of logs
-%%%imagesc(kappas ./ bounds);
 imagesc(ratios);
 set(gca, 'XTick', 1:nsigs, 'XTickLabel', sigs)
 set(gca, 'YTick', 1:nns,   'YTickLabel', ns)
 set(gca,'YDir','normal')
-%caxis manual
-%caxis(log([min(ratios, [] , 'all') max(ratios, [], 'all')]));
-%colormap(gca, winter);
 colorMap = [linspace(0.2, 0.7,256)', linspace(0.2, 0.7,256)', ones(256, 1)];
 colormap(gca, colorMap);
 colorbar;
