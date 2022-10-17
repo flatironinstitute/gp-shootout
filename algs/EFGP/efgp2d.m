@@ -46,8 +46,8 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
   [xis_xx, xis_yy] = ndgrid(xis, xis);    % assumes isotropic
   % center all coords for NUFFTs domain, then do 2pi.h ("tph") rescaling...
   xcen = (x1+x0)/2;                    % row vec
-  tphx = 2*pi*h*(x - xcen);            % note broadcast over rows
-  tphxsol = 2*pi*h*(xsol - xcen);      % "
+  x = 2*pi*h*(x - xcen);            % note broadcast over rows
+  
   
   % khat & quadr weights of Fourier basis funcs
   rs = sqrt(xis_xx.^2 + xis_yy.^2);
@@ -55,14 +55,14 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
   
   % precomputation for fast apply of X*X
   nuffttol = eps/10;     % 1e-14 to check conv
-  Gf = getGf(nuffttol, tphx, mtot);
+  Gf = getGf(nuffttol, x, mtot);
     
   % conjugate gradient
   ws_flat = ws(:);
   Afun = @(a) ws_flat .* apply_xtx(Gf, ws_flat .* a, mtot) + sigmasq .* a;
     
     isign = -1;
-    rhs = finufft2d1(tphx(:,1), tphx(:,2), y, isign, nuffttol, mtot, mtot);
+    rhs = finufft2d1(x(:,1), x(:,2), y, isign, nuffttol, mtot, mtot);
     rhs = reshape(rhs .* ws, [], 1);
     t_precomp = toc(tic_precomp);
 
@@ -81,8 +81,9 @@ function [beta, xis, ytrg, iter, time_info] = efgp2d(x, y, sigmasq, ker, eps, xs
     tic_post = tic;
     wsbeta = ws .* reshape(beta, [mtot, mtot]);
     isign = +1;
-    yhat = finufft2d2(tphxsol(:,1), tphxsol(:,2),isign,nuffttol,wsbeta);
-    ytrg.mean = real(yhat);
+    xsol = 2*pi*h*(xsol - xcen);      % "
+    ytrg.mean = finufft2d2(xsol(:,1), xsol(:,2),isign,nuffttol,wsbeta);
+    ytrg.mean = real(ytrg.mean);
     t_post = toc(tic_post);
 
     % package timings

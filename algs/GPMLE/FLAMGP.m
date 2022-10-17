@@ -1,4 +1,4 @@
-function [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
+function [y, ytrg, info,varargout] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
 % FLAMGP  GP regression via recursive skeletonization, in dim 1 or 2.
 %
 % [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrg, opts)
@@ -55,7 +55,7 @@ if ~isfield(opts,'occ')
     end
 end
 fprintf('occupancy=%d\n',opts.occ)
-if ~isfield(opts,'p'), opts.p = max(5,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/3))  ; end
+if ~isfield(opts,'p'), opts.p = max(8,ceil(log(opts.tol)/log(sqrt(2.0)/3.0)/3))  ; end
 if ~isfield(opts,'v'), opts.v = 0; end
 do_pxy = true;
 if isfield(opts, 'no_proxy'), do_pxy = ~opts.no_proxy; end
@@ -70,7 +70,7 @@ if numel(meas)~=N, error('sizes of meas and x must match!'); end
 verb = 1;
 
 scale = ker.l;
-R = 3.0*scale;
+R = 1.0*scale;
 if(dim == 1)
     proxy = linspace(0,R,opts.p); proxy = [-proxy proxy];  % proxy points
     shift = 1.5*sign(proxy);
@@ -126,6 +126,8 @@ info.proxy = proxy;
 w = whos('F');
 info.RAM = w.bytes;
 dummy = [];
+varargout{1} = alpha;
+clear F;
 
 % posterior mean at targets
 ytrg = [];
