@@ -1,7 +1,7 @@
 rng(1);
 
 % set directory for saving data
-dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 
 % sigma 
 sigmatrue = 0.5;

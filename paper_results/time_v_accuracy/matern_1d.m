@@ -2,7 +2,7 @@
 clear opts;
 
 % set directory for saving results and loading data
-dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 
 % sigma used to generate data and to be used for regression
 load(fullfile(dir, 'sigmatrue.mat'));
@@ -24,7 +24,6 @@ var = 1;
 nu = 0.5;
 ker = Matern_ker(dim, nu, l, var);
 
-
 % % get accurate solution
 % opts.tol = 1e-14;
 % [y0, ytrg_true0, info0] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
@@ -35,6 +34,7 @@ ker = Matern_ker(dim, nu, l, var);
 % save(fullfile(dir, 'matern_1d_x.mat'), 'x');
 % save(fullfile(dir, 'matern_1d_meas.mat'), 'meas');
 
+% load reference solution and data
 load(fullfile(dir, 'matern_1d_true.mat'));
 load(fullfile(dir, 'matern_1d_true0.mat'));
 load(fullfile(dir, 'matern_1d_x.mat'));
@@ -42,17 +42,13 @@ load(fullfile(dir, 'matern_1d_meas.mat'));
 fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
 
 
-
-
-
-
-
 % EFGP
-nns = 6;
+nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
+    opts.l2scaled = true;
     opts.tol = 1e-2 * 10^(-i);
     [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
     
@@ -66,6 +62,7 @@ efgp_1d_matern.rms_errs = rms_errs;
 efgp_1d_matern.linf_errs = linf_errs;
 save('efgp_1d_matern.mat','efgp_1d_matern');
 
+return
 
 
 % SKI
@@ -107,10 +104,6 @@ flam_1d_matern.rms_errs = rms_errs;
 flam_1d_matern.linf_errs = linf_errs;
 save('flam_1d_matern.mat','flam_1d_matern');
 
-
-
-
-
 % RLCM
 nns = 4;
 ts = zeros(nns, 1);
@@ -127,8 +120,6 @@ rlcm_1d_matern.ts = ts;
 rlcm_1d_matern.rms_errs = rms_errs;
 rlcm_1d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'rlcm_1d_matern.mat'), 'rlcm_1d_matern');
-
-
 
 
 % plotting

@@ -1,8 +1,10 @@
 % accuracy vs time for for fixed N
 clear opts;
 
+dim = 1;
+
 % set directory for saving results and loading data
-dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 
 % sigma used to generate data and to be used for regression
 load(fullfile(dir, 'sigmatrue.mat'));
@@ -12,14 +14,13 @@ load(fullfile(dir, 'x_1d_1e5.mat'));
 load(fullfile(dir, 'meas_1d_1e5.mat'));
 
 % targets
-ntrgs = 100;
+ntrgs = 10000;
 xtrgs = linspace(min(x), max(x), ntrgs);
 opts.only_trgs = 1;
 
 % kernel
 sigmasq = sigmatrue^2;
 l = 0.1;
-dim = 1;
 ker = SE_ker(dim,l);
 
 % get accurate solution
@@ -30,15 +31,10 @@ fprintf('\n');
 opts.tol = 1e-14;
 [y_true, ytrg_true, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
 fprintf('\n');
-%%%scatter(x, meas); hold on; plot(xtrgs, ytrg_true.mean); hold off
-%%%[y, ytrg_true, ~] = naive_gp(x, meas, sigmasq, ker, xtrgs, []);
 fprintf('max dd: %g\n', max(abs(ytrg_true0.mean - ytrg_true.mean)));
 fprintf('rms dd: %g\n', rms(ytrg_true0.mean - ytrg_true.mean));
-
-
-
-
-
+%save(fullfile(dir, 'se_1d_true.mat'), 'ytrg_true');
+%save(fullfile(dir, 'se_1d_true0.mat'), 'ytrg_true0');
 
 % EFGP
 nns = 10;
@@ -47,6 +43,7 @@ linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
     opts.tol = 1e-2 * 10^(-i);
+    opts.l2scaled = true;
     [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
@@ -60,7 +57,9 @@ save(fullfile(dir, 'efgp_1d.mat'), 'efgp_1d');
 
 
 
+
 % SKI
+fprintf('---SKI---\n');
 nns = 4;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
@@ -84,6 +83,7 @@ save(fullfile(dir, 'ski_1d.mat'), 'ski_1d');
 
 
 % FLAM
+fprintf('---FLAM---\n');
 nns = 5;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
@@ -109,6 +109,7 @@ save(fullfile(dir, 'flam_1d.mat'), 'flam_1d');
 
 
 %RLCM
+fprintf('---RLCM---\n');
 nns = 4;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);

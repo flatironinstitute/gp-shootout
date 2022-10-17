@@ -4,7 +4,7 @@ clear opts;
 dim = 2;
 
 % set directory for saving results and loading data
-dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 
 % sigma used to generate data and to be used for regression
 load(fullfile(dir, 'sigmatrue.mat'));
@@ -40,14 +40,14 @@ fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
 
 
 
-
 % EFGP
-nns = 3;
+nns = 4;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
     opts.tol = 1e-1 * 10^(-i);
+    opts.l2scaled = true;
     [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
     
     ts(i) = info.cpu_time.total;
@@ -59,6 +59,8 @@ efgp_2d_matern.ts = ts;
 efgp_2d_matern.rms_errs = rms_errs;
 efgp_2d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'efgp_2d_matern.mat'), 'efgp_2d_matern');
+
+
 
 
 % SKI
@@ -123,9 +125,6 @@ rlcm_2d_matern.ts = ts;
 rlcm_2d_matern.rms_errs = rms_errs;
 rlcm_2d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'rlcm_2d_matern.mat'), 'rlcm_2d_matern');
-
-
-
 
 
 % plotting

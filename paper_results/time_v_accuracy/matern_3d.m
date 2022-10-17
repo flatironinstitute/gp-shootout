@@ -4,19 +4,14 @@ clear opts;
 dim = 3;
 
 % set directory for saving results and loading data
-dir = "~/gp-shootout/results/philip/time_v_accuracy/data";
+dir = [fileparts(mfilename('fullpath')) '/data'];
 
 % sigma used to generate data and to be used for regression
 load(fullfile(dir, 'sigmatrue.mat'));
 
 % load data
-load(fullfile(dir, 'x_3d_1e5.mat'));
-load(fullfile(dir, 'meas_3d_1e5.mat'));
-
-% % subsample for testing
-% N = 100;
-% meas = meas(1:N);
-% x = x(:, 1:N);
+load(fullfile(dir, 'x_2d_1e5.mat'));
+load(fullfile(dir, 'meas_2d_1e5.mat'));
 
 % targets
 ntrgs = 30;
@@ -30,47 +25,47 @@ var = 1;
 nu = 0.5;
 ker = Matern_ker(dim, nu, l, var);
 
-% Accurate solution via efgp
-opts.tol = 0.001;
-[y_true0, ytrg_true0, info0] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
-save(fullfile(dir, 'matern_3d_true.mat'), 'ytrg_true0');
-fprintf('finished ground truth 1\n');
-
-opts.tol = 0.0005;
-[y_true, ytrg_true, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
-fprintf('finished ground truth 2\n');
-save(fullfile(dir, 'matern_3d_true.mat'), 'ytrg_true');
+% % Accurate solution via efgp
+% opts.tol = 1e-4;
+% [y_true0, ytrg_true0, info0] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
+% %save(fullfile(dir, 'matern_3d_true0.mat'), 'ytrg_true0');
+% fprintf('finished ground truth 1\n');
+% 
+% opts.tol = 1e-5;
+% [y_true, ytrg_true, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
+% fprintf('finished ground truth 2\n');
+% %save(fullfile(dir, 'matern_3d_true.mat'), 'ytrg_true');
+% fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
+% fprintf('rmse: %g\n', rms(ytrg_true.mean - ytrg_true0.mean));
 
 % % Accurate solution via flam
 % opts.no_proxy = true;
-% opts.tol = 1e-3; 
+% opts.tol = 1e-4; 
 % opts.v = true;
 % [y_true0, ytrg_true0, info0] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
 % fprintf('finished ground truth 1\n');
-% save(fullfile(dir, 'matern_3d_true0.mat'), 'ytrg_true0');
+% save(fullfile(out_dir, 'matern_3d_true0.mat'), 'ytrg_true0');
 % 
-% opts.tol = 1e-4;
+% opts.tol = 1e-5;
 % [y_true, ytrg_true, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
 % fprintf('finished ground truth 2\n');
-% save(fullfile(dir, 'matern_3d_true.mat'), 'ytrg_true');
+% save(fullfile(out_dir, 'matern_3d_true.mat'), 'ytrg_true');
 
-save(fullfile(dir, 'matern_3d_x.mat'), 'x');
-save(fullfile(dir, 'matern_3d_meas.mat'), 'meas');
-
-load(fullfile(dir, 'matern_3d_true.mat'));
-load(fullfile(dir, 'matern_3d_true0.mat'));
+load(fullfile(out_dir, 'matern_3d_true.mat'));
+load(fullfile(out_dir, 'matern_3d_true0.mat'));
 fprintf('max dd: %g\n', max(abs(ytrg_true.mean - ytrg_true0.mean)));
 fprintf('rmse: %g\n', rms(ytrg_true.mean - ytrg_true0.mean));
 
 
 % EFGP
-nns = 3;
+nns = 4;
 ts = zeros(nns, 1);
 linf_errs = zeros(nns, 1);
 rms_errs = zeros(nns, 1);
 for i=1:nns
     fprintf('efgp %d\n', i);
     opts.tol = 10^(-i);
+    opts.l2scaled = true;
     [y, ytrg, info] = EFGP(x, meas, sigmasq, ker, xtrgs, opts);
     
     ts(i) = info.cpu_time.total;
@@ -82,6 +77,7 @@ efgp_3d_matern.ts = ts;
 efgp_3d_matern.rms_errs = rms_errs;
 efgp_3d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'efgp_3d_matern.mat'), 'efgp_3d_matern');
+
 
 
 % SKI
@@ -104,6 +100,10 @@ ski_3d_matern.rms_errs = rms_errs;
 ski_3d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'ski_3d_matern.mat'), 'ski_3d_matern');
 
+fprintf('EFGP\n')
+print_tikz(log10(efgp_3d_matern.rms_errs), log10(efgp_3d_matern.ts))
+print_tikz(log10(rms_errs), log10(ts))
+
 
 
 % FLAM
@@ -114,7 +114,7 @@ rms_errs = zeros(nns, 1);
 opts.v = true;
 for i=1:nns
     fprintf('flam %d\n', i);
-    opts.tol = 10^(-2 - i); 
+    opts.tol = 10^(-1 - i);
     [y, ytrg, info] = FLAMGP(x, meas, sigmasq, ker, xtrgs, opts);
     ts(i) = info.cpu_time.total;
     rms_errs(i) = rms(ytrg.mean - ytrg_true.mean);
@@ -126,7 +126,8 @@ flam_3d_matern.rms_errs = rms_errs;
 flam_3d_matern.linf_errs = linf_errs;
 save(fullfile(dir, 'flam_3d_matern.mat'), 'flam_3d_matern');
 
-
+fprintf('FLAM\n')
+print_tikz(log10(flam_3d_matern.rms_errs), log10(flam_3d_matern.ts))
 
 
 
