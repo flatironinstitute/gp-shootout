@@ -14,6 +14,8 @@ function [xis, h, mtot] = get_xis(ker, eps, L, opts)
 %  opts   - Optional arguments with default values in parenthesis
 %              opts.use_integral (false), use the integral estimate
 %               heuristic by philip
+%              opts.l2scaled (false) whether to use l2 scaling of integral 
+%               with new heuristics in determining h,m
 %  Output:
 %   xis   - row-vector of equispaced values to be used as quadrature nodes
 %           (all weights in 1D are h=xis(2)-xis(1)).  Their number is odd.
@@ -63,7 +65,8 @@ function [xis, h, mtot] = get_xis(ker, eps, L, opts)
           eps_use = eps/ker.var;
           if(isfield(opts,'l2scaled')) 
              if(opts.l2scaled)
-               rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);   % alex notes there's cancellation of 2^stuff here?
+               % the following is the L2 norm of the kernel k (see p. 24 of the original arxiv paper) 
+               rl2sq = (2*nu/pi/l^2)^(dim/2)*ker.khat(0)^2/2*gamma(dim/2+2*nu)/gamma(dim+2*nu)*2^(-dim/2);  % alex notes there's cancellation of 2^stuff here?
                eps_use = eps*sqrt(rl2sq);
              end
           end
@@ -71,7 +74,7 @@ function [xis, h, mtot] = get_xis(ker, eps, L, opts)
           eps = eps_use;
           h = 1/(L+0.85*l/sqrt(ker.nu)*log(1/eps));   % heuristic \eqref{hheur}
           % note hm is "m" in the paper...
-          hm = ceil(( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h);
+          hm = ceil(( pi^(nu+dim/2)*l^(2*nu) * eps/0.15 )^(-1/(2*nu+dim/2)) / h); % heuristic \eqref{mheur}
           
       elseif(strcmpi(ker.fam,'squared-exponential'))
           l = ker.l;
