@@ -1,9 +1,10 @@
 # gp-shootout
 
 Benchmark and compare several large-scale Gaussian process regression methods in 1D, 2D, and 3D,
-including our implementation of the equispaced Fourier method (EFGP).
+including our implementation of the equispaced Fourier method (EFGP)
+described in https://arxiv.org/abs/2210.10210 and https://arxiv.org/abs/2305.11065 .
 We focus on posterior mean prediction (kernel ridge regression).
-We also generate figures and tables for the paper.
+We also generate figures and tables for the first of the above papers.
 
 Authors: Philip R Greengard, Alex H Barnett, Manas Rachh.
 
